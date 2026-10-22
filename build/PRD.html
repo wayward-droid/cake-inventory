@@ -1,0 +1,393 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Cake Slice Factory - Product Requirements Document</title>
+<style>
+@page { size: A4; margin: 1.9cm 1.7cm; }
+* { box-sizing: border-box; }
+body {
+  font-family: "Segoe UI", Calibri, Arial, sans-serif;
+  font-size: 10.5pt; line-height: 1.45; color: #1f2328; margin: 0;
+}
+h1 { font-size: 22pt; color: #7b3f00; margin: 0 0 6pt; }
+h2 { font-size: 15.5pt; color: #7b3f00; margin: 20pt 0 6pt; padding-bottom: 3pt; border-bottom: 1.5pt solid #d9c3a5; }
+h3 { font-size: 12.5pt; color: #4a3416; margin: 14pt 0 5pt; }
+h4 { font-size: 11pt; color: #4a3416; margin: 11pt 0 4pt; }
+p { margin: 0 0 7pt; }
+a { color: #0b5cad; text-decoration: underline; }
+hr { border: none; border-top: 1pt solid #ddd; margin: 12pt 0; }
+ul, ol { margin: 0 0 8pt; padding-left: 20pt; }
+li { margin: 0 0 3pt; }
+code { font-family: Consolas, "Courier New", monospace; font-size: 9.5pt; background: #f2f4f7; padding: 0 2pt; }
+pre {
+  font-family: Consolas, "Courier New", monospace; font-size: 7.6pt; line-height: 1.25;
+  background: #f6f8fa; border: 0.75pt solid #d6dbe1; padding: 7pt 8pt; margin: 0 0 9pt;
+  white-space: pre; overflow-wrap: normal;
+}
+pre code { background: none; font-size: 7.6pt; padding: 0; }
+blockquote { margin: 0 0 9pt; padding: 4pt 0 4pt 10pt; border-left: 3pt solid #d9c3a5; color: #444; }
+table { border-collapse: collapse; width: 100%; margin: 0 0 10pt; font-size: 9pt; }
+th, td { border: 0.75pt solid #b9c0c8; padding: 4pt 6pt; text-align: left; vertical-align: top; }
+th { background: #f0e6d8; color: #4a3416; font-weight: bold; }
+strong { color: #1a1a1a; }
+</style>
+</head>
+<body>
+<h1>Product Requirements Document</h1>
+<h2>Cake Slice Factory — Sales, Inventory &amp; Expense Management</h2>
+<table>
+<tr><th>Field</th><th>Value</th></tr>
+<tr><td>Product</td><td>Cake Slice Factory</td></tr>
+<tr><td>Version</td><td>1.0 (Draft for approval)</td></tr>
+<tr><td>Status</td><td>Ready for review</td></tr>
+<tr><td>Document owner</td><td>Business owner (product sponsor)</td></tr>
+<tr><td>Prepared by</td><td>Engineering</td></tr>
+<tr><td>Last updated</td><td>2026-10-21</td></tr>
+<tr><td>Stack</td><td>HTML, CSS, JavaScript, Supabase (Postgres + Auth + Storage + Realtime)</td></tr>
+</table>
+<h2>1. Overview</h2>
+<h3>1.1 Problem statement</h3>
+<p>Cake Slice Factory sells cakes through walk-in customers and via Instagram and WhatsApp, and bakes from raw ingredients. Today orders, ingredient stock, production and expenses are tracked by hand (notebooks, WhatsApp chats, memory). The consequences are:</p>
+<p>No reliable picture of what is in stock (ingredients or finished cakes).</p>
+<p>Orders taken on Instagram/WhatsApp are easy to lose or forget, and delivery dates slip.</p>
+<p>Prices are guessed because true cost per cake (from the recipe) is not known.</p>
+<p>Money leaks: expenses are unrecorded, so profit is unknown.</p>
+<p>No accountability — anyone can change a price or delete a record with no trace.</p>
+<p>Repeating customers are not recognised, and top locations are unknown, so no marketing decisions.</p>
+<h3>1.2 Product vision</h3>
+<p>One simple, mobile-friendly web app that runs the whole operation: take an order from any channel, track the ingredients and finished cakes it consumes, record every naira in and out, and print a professional quote/invoice/receipt — all with an accurate profit picture for the owner.</p>
+<h3>1.3 Objectives (12 months)</h3>
+<table>
+<tr><th>#</th><th>Objective</th><th>Target</th></tr>
+<tr><td>O1</td><td>Every sale is recorded in the system</td><td>≥ 95% of orders</td></tr>
+<tr><td>O2</td><td>No order forgotten</td><td>0 missed fulfilment dates</td></tr>
+<tr><td>O3</td><td>Ingredient stock is knowable at any time</td><td>100% of stock movements logged</td></tr>
+<tr><td>O4</td><td>True cost &amp; margin per product</td><td>Known for all active products</td></tr>
+<tr><td>O5</td><td>Know monthly profit</td><td>Report available within 1 day of month end</td></tr>
+<tr><td>O6</td><td>Accountability for edits</td><td>100% of money-affecting changes audited</td></tr>
+</table>
+<h3>1.4 Success metrics (KPIs)</h3>
+<p>Adoption: % of orders entered per week; active staff users per day.</p>
+<p>Data quality: % of orders with a linked customer; % of products with a recipe.</p>
+<p>Business value: gross margin % trend; stock-out incidents per month; unrecorded-expense count (target 0).</p>
+<p>Speed: median time to record a walk-in order (&lt; 45 seconds).</p>
+<p>Reliability: order data loss incidents (target 0).</p>
+<h2>2. Personas &amp; Roles</h2>
+<table>
+<tr><th>Persona</th><th>Description</th><th>Primary goals</th><th>Device</th></tr>
+<tr><td>Owner / Sponsor</td><td>Runs the business, prices products, decides.</td><td>Profit visibility, control, accountability.</td><td>Phone + laptop</td></tr>
+<tr><td>Front-desk staff</td><td>Takes orders at the counter and via Instagram/WhatsApp.</td><td>Record an order fast; issue a receipt; answer &quot;do we have it?&quot;</td><td>Phone (counter)</td></tr>
+<tr><td>Baker / Production staff</td><td>Bakes, records output, consumes ingredients.</td><td>Log a batch, know what's in the store.</td><td>Phone/tablet</td></tr>
+<tr><td>Accountant (Phase 2)</td><td>Periodic review of expenses and payables.</td><td>Clean expense data, exportable.</td><td>Laptop</td></tr>
+</table>
+<h3>2.1 Role &amp; permission matrix</h3>
+<table>
+<tr><th>Capability</th><th>Owner</th><th>Staff</th></tr>
+<tr><td>View dashboard &amp; reports</td><td>✅</td><td>✅</td></tr>
+<tr><td>Create/edit/delete products, ingredients, vendors, recipes</td><td>✅</td><td>❌ (read-only)</td></tr>
+<tr><td>Set selling prices &amp; discounts</td><td>✅</td><td>⚠️ discount capped, logged</td></tr>
+<tr><td>Create/edit orders, customers, payments</td><td>✅</td><td>✅</td></tr>
+<tr><td>Complete / cancel an order</td><td>✅</td><td>⚠️ configurable</td></tr>
+<tr><td>Void or delete a completed order</td><td>✅</td><td>❌</td></tr>
+<tr><td>Record production batches</td><td>✅</td><td>✅</td></tr>
+<tr><td>Record items received / purchases</td><td>✅</td><td>✅</td></tr>
+<tr><td>Record expenses</td><td>✅</td><td>✅</td></tr>
+<tr><td>Run stock take</td><td>✅</td><td>✅</td></tr>
+<tr><td>Manage users &amp; roles</td><td>✅</td><td>❌</td></tr>
+<tr><td>View audit log</td><td>✅</td><td>❌</td></tr>
+<tr><td>Export data / backup</td><td>✅</td><td>❌</td></tr>
+</table>
+<p>Permissions are enforced in the database with Row Level Security, not just in the UI.</p>
+<h2>3. Scope</h2>
+<h3>3.1 In scope</h3>
+<p>Sales (walk-in, Instagram, WhatsApp, phone), customers, orders (ready-made and custom cakes), a quotes workspace, delivery vs pick-up, a month calendar and dispatch board, issued quotes/invoices/receipts, a payment ledger with balances, finished-goods inventory, ingredient inventory, recipes, vendor records, items received, production batches, stock ledger, expenses, reporting and analytics, multi-format exports, users and permissions.</p>
+<h3>3.2 Out of scope (v1)</h3>
+<p>Payroll calculation, full double-entry accounting, e-commerce storefront, native mobile apps, multi-currency, multi-branch, automated marketing campaigns, barcode hardware.</p>
+<h3>3.3 Future scope (v2+)</h3>
+<p>Multi-branch, customer self-service order form, loyalty/promotions, demand forecasting, vendor price comparison, barcode scanning, offline-first sync with conflict resolution.</p>
+<h2>4. Features Added Beyond the Original Brief</h2>
+<p>The owner listed Sales, Inventory and Expenses. The following features were not requested but are necessary for the system to be safe, trustworthy and actually usable in a real cake business. Each is prioritised with MoSCoW (Must, Should, Could, Won't-yet).</p>
+<h3>4.1 Critical — the system is unsafe without these</h3>
+<table>
+<tr><th>#</th><th>Feature</th><th>Why it is necessary</th><th>Priority</th></tr>
+<tr><td>A1</td><td>Users, roles &amp; permissions</td><td>Money-handling systems need accountability. Anyone editing prices/stock must be identified.</td><td>M</td></tr>
+<tr><td>A2</td><td>Audit / activity log</td><td>&quot;Who changed this price? Who deleted that order?&quot; must be answerable. Immutable history of money-affecting changes.</td><td>M</td></tr>
+<tr><td>A3</td><td>Refunds, cancellations &amp; stock reversal</td><td>Stock is deducted when an order completes. Without a reversal path, cancelling an order permanently corrupts stock.</td><td>M</td></tr>
+<tr><td>A4</td><td>Balances, debtors &amp; part payments</td><td>Real customers pay a deposit then balance. Without this, &quot;who owes me money?&quot; is unanswerable.</td><td>M</td></tr>
+<tr><td>A5</td><td>Discounts &amp; price overrides (logged)</td><td>Discounting is normal; undisciplined discounting destroys margin. Must be captured and attributed.</td><td>M</td></tr>
+<tr><td>A6</td><td>Waste, spoilage &amp; returns</td><td>Cakes burn, ingredients expire, items are returned. Unrecorded waste silently breaks stock accuracy.</td><td>M</td></tr>
+<tr><td>A7</td><td>Data export &amp; backup</td><td>Business continuity. The owner must be able to extract their own data as CSV, Excel, Word, PDF or print, and restore from a full JSON snapshot.</td><td>M</td></tr>
+<tr><td>A8</td><td>Offline / poor-network resilience</td><td>Nigerian mobile data drops mid-order. The app must not silently lose a sale.</td><td>M</td></tr>
+<tr><td>A9</td><td>Soft delete + restore (trash)</td><td>Accidental deletes must be recoverable; history must never break.</td><td>M</td></tr>
+<tr><td>A10</td><td>Input validation &amp; clear error handling</td><td>Bad data (negative stock, missing phone) destroys reports.</td><td>M</td></tr>
+<tr><td>A11</td><td>Mobile-first responsive UI</td><td>Orders are taken on a phone at the counter. Desktop-only fails.</td><td>M</td></tr>
+<tr><td>A12</td><td>Tax (VAT) handling &amp; rounding rules</td><td>Invoices must be legally correct and totals must reconcile to the kobo.</td><td>M</td></tr>
+<tr><td>A13</td><td>Branded document printing</td><td>Quote/invoice/receipt must carry business name, address, phone and logo to be professional.</td><td>M</td></tr>
+<tr><td>A14</td><td>Low-stock alerts &amp; reorder points</td><td>The whole point of inventory — know before you run out.</td><td>M</td></tr>
+<tr><td>A15</td><td>Search, filter, sort, pagination</td><td>With hundreds of products/orders, a plain list is unusable.</td><td>M</td></tr>
+</table>
+<h3>4.2 Important — needed for real day-to-day operation</h3>
+<table>
+<tr><th>#</th><th>Feature</th><th>Why it matters</th><th>Priority</th></tr>
+<tr><td>B1</td><td>Customer CRM &amp; purchase history</td><td>Repeat customers are the core of a cake business; enables &quot;last order again&quot;.</td><td>S</td></tr>
+<tr><td>B2</td><td>WhatsApp deep-link to send quote/invoice/receipt</td><td>Matches how the business actually communicates; removes manual re-typing.</td><td>S</td></tr>
+<tr><td>B3</td><td>Production calendar &amp; order scheduling</td><td>Prevents double-booking the oven and missed delivery dates.</td><td>S</td></tr>
+<tr><td>B4</td><td>Unit conversion (bag ↔ kg ↔ g)</td><td>Ingredients are bought in 50 kg bags but recipes use grams. Without this, recipes are wrong.</td><td>S</td></tr>
+<tr><td>B5</td><td>Recipe costing &amp; margin analysis</td><td>Shows true cost per cake and profit per product → correct pricing.</td><td>S</td></tr>
+<tr><td>B6</td><td>Purchase orders &amp; vendor payables</td><td>Order ingredients ahead; track what you owe vendors.</td><td>S</td></tr>
+<tr><td>B7</td><td>Stock take / physical count &amp; variance</td><td>The only way to detect and correct drift between system and reality.</td><td>S</td></tr>
+<tr><td>B8</td><td>Batch &amp; expiry tracking</td><td>Perishable ingredients (dairy, eggs) must be used oldest-first.</td><td>S</td></tr>
+<tr><td>B9</td><td>Delivery/rider assignment &amp; delivery status</td><td>Deliveries fail silently without ownership of the trip.</td><td>S</td></tr>
+<tr><td>B10</td><td>Attachments (cake reference photos, expense receipts)</td><td>Evidence for custom orders and expense claims.</td><td>S</td></tr>
+<tr><td>B11</td><td>Price history</td><td>Explains price changes; supports margin trend analysis.</td><td>S</td></tr>
+<tr><td>B12</td><td>In-app notifications (low stock, due orders)</td><td>Turns the system from passive record to active assistant.</td><td>S</td></tr>
+<tr><td>B13</td><td>Daily sales close / cash-up summary</td><td>End-of-day reconciliation between cash received and orders recorded.</td><td>S</td></tr>
+<tr><td>B14</td><td>Profit &amp; Loss and cash-flow reports</td><td>The owner's core question: &quot;did I make money?&quot;</td><td>S</td></tr>
+<tr><td>B15</td><td>Void / override controls</td><td>Fraud prevention: restricts who can void and requires a reason.</td><td>S</td></tr>
+<tr><td>B16</td><td>Stock movement reason codes</td><td>Every adjustment must say why, or the ledger is useless.</td><td>S</td></tr>
+<tr><td>B17</td><td>Password reset &amp; session management</td><td>Users must self-serve; sessions must expire safely.</td><td>S</td></tr>
+<tr><td>B18</td><td>Onboarding &amp; guided setup</td><td>A blank system is never adopted; guided first-run matters.</td><td>S</td></tr>
+</table>
+<h3>4.3 Nice to have</h3>
+<table>
+<tr><th>#</th><th>Feature</th><th>Priority</th></tr>
+<tr><td>C1</td><td>Multi-branch / location support</td><td>C</td></tr>
+<tr><td>C2</td><td>Barcode / QR scanning for products</td><td>C</td></tr>
+<tr><td>C3</td><td>Loyalty points &amp; promotions engine</td><td>C</td></tr>
+<tr><td>C4</td><td>Vendor price comparison &amp; best-vendor suggestions</td><td>C</td></tr>
+<tr><td>C5</td><td>Demand forecasting from historical sales</td><td>C</td></tr>
+<tr><td>C6</td><td>Dark mode</td><td>C</td></tr>
+<tr><td>C7</td><td>Multi-currency</td><td>C</td></tr>
+<tr><td>C8</td><td>Public customer order form (self-service)</td><td>C</td></tr>
+<tr><td>C9</td><td>Two-factor authentication for owner accounts</td><td>C</td></tr>
+<tr><td>C10</td><td>Automated off-site backup schedule</td><td>C</td></tr>
+</table>
+<h2>5. Functional Requirements</h2>
+<p>Each requirement has a stable ID (M&lt;module&gt;-FR-&lt;n&gt;), a priority, and acceptance criteria (AC).</p>
+<h3>M1 — Identity &amp; Access</h3>
+<table>
+<tr><th>ID</th><th>Requirement</th><th>Pri</th><th>Acceptance criteria</th></tr>
+<tr><td>M1-FR-00</td><td>First-run owner setup</td><td>M</td><td>The first signed-in account claims owner once from the sign-in page; a second claim is refused by the database</td></tr>
+<tr><td>M1-FR-01</td><td>Users sign up / sign in with email + password</td><td>M</td><td>Valid credentials issue a session; invalid show an inline error</td></tr>
+<tr><td>M1-FR-02</td><td>Password reset by email</td><td>M</td><td>User receives link and can set a new password</td></tr>
+<tr><td>M1-FR-03</td><td>Owner can invite/create staff accounts and set role</td><td>M</td><td>New account defaults to staff; owner can set owner/staff</td></tr>
+<tr><td>M1-FR-04</td><td>Owner can deactivate a staff member</td><td>S</td><td>Deactivated user cannot sign in; their history is retained</td></tr>
+<tr><td>M1-FR-05</td><td>Sessions persist across reloads and auto-refresh</td><td>M</td><td>Reload keeps user signed in; expired session redirects to login</td></tr>
+<tr><td>M1-FR-06</td><td>All data access is row-level filtered by role</td><td>M</td><td>Staff cannot write to products/ingredients/vendors/recipes via API</td></tr>
+</table>
+<h3>M2 — Product Catalog (finished cakes)</h3>
+<table>
+<tr><th>ID</th><th>Requirement</th><th>Pri</th><th>Acceptance criteria</th></tr>
+<tr><td>M2-FR-01</td><td>Create a product with name, SKU, category, flavour, size, unit, price, cost, stock, low-stock level, image, status</td><td>M</td><td>Product appears in list and is searchable immediately</td></tr>
+<tr><td>M2-FR-02</td><td>Distinguish ready-made vs custom (made-to-order) products</td><td>M</td><td>Custom products do not require tracked stock</td></tr>
+<tr><td>M2-FR-03</td><td>Edit any product field</td><td>M</td><td>Changes persist; an audit entry is written; price change recorded in price history</td></tr>
+<tr><td>M2-FR-04</td><td>Soft-delete (archive) a product; restore from trash</td><td>M</td><td>Archived product is hidden from new orders but retained in history</td></tr>
+<tr><td>M2-FR-05</td><td>Duplicate a product (fast variant creation)</td><td>C</td><td>New row is created with &quot; (copy)&quot; suffix</td></tr>
+<tr><td>M2-FR-06</td><td>Search by name/SKU; filter by category, kind, status, stock level</td><td>M</td><td>Filters combine correctly and return within 1s</td></tr>
+<tr><td>M2-FR-07</td><td>Show computed margin % per product</td><td>S</td><td>margin = (price − cost) / price</td></tr>
+</table>
+<h3>M3 — Ingredients &amp; Recipes</h3>
+<table>
+<tr><th>ID</th><th>Requirement</th><th>Pri</th><th>Acceptance criteria</th></tr>
+<tr><td>M3-FR-01</td><td>Create/edit ingredients with unit, cost per unit, stock, low-stock level, preferred vendor</td><td>M</td><td>Saved and reflected in stock list</td></tr>
+<tr><td>M3-FR-02</td><td>Define a recipe (bill of materials) per product</td><td>M</td><td>Recipe shows ingredients with quantities and rolled-up cost</td></tr>
+<tr><td>M3-FR-03</td><td>Recipe cost rolls up into product cost</td><td>S</td><td>Product cost updates when ingredient costs change (recalc action)</td></tr>
+<tr><td>M3-FR-04</td><td>Unit conversions per ingredient (e.g. 1 bag = 50 kg)</td><td>S</td><td>Purchase in bags; recipe consumes kg correctly</td></tr>
+<tr><td>M3-FR-05</td><td>Batch/lot + expiry per received quantity</td><td>S</td><td>Expiry warnings surface ingredients near expiry</td></tr>
+<tr><td>M3-FR-06</td><td>Low-stock and expiry alert list</td><td>M</td><td>Alerts appear on dashboard and are filterable</td></tr>
+</table>
+<h3>M4 — Vendors &amp; Purchasing</h3>
+<table>
+<tr><th>ID</th><th>Requirement</th><th>Pri</th><th>Acceptance criteria</th></tr>
+<tr><td>M4-FR-01</td><td>Create/edit vendor with contact, phone, email, address, supplies</td><td>M</td><td>Vendor selectable in purchases and expenses</td></tr>
+<tr><td>M4-FR-02</td><td>Record items received (ingredient, qty, unit cost, date, vendor)</td><td>M</td><td>Ingredient stock increases and a ledger row is written</td></tr>
+<tr><td>M4-FR-03</td><td>Update ingredient cost from latest purchase</td><td>S</td><td>cost_per_unit reflects most recent non-zero unit cost</td></tr>
+<tr><td>M4-FR-04</td><td>Raise a purchase order to a vendor and mark received</td><td>S</td><td>Received PO creates purchase rows and stock movements</td></tr>
+<tr><td>M4-FR-05</td><td>Vendor payables summary</td><td>S</td><td>Total owed per vendor = received POs − payments</td></tr>
+</table>
+<h3>M5 — Production</h3>
+<table>
+<tr><th>ID</th><th>Requirement</th><th>Pri</th><th>Acceptance criteria</th></tr>
+<tr><td>M5-FR-01</td><td>Record a production batch (product, qty, date, note)</td><td>M</td><td>Batch number auto-generated</td></tr>
+<tr><td>M5-FR-02</td><td>Consume recipe ingredients on batch creation</td><td>M</td><td>Ingredient stock decreases by recipe qty × batch qty; ledger rows written</td></tr>
+<tr><td>M5-FR-03</td><td>Increase finished-cake stock on batch creation</td><td>M</td><td>Product stock increases by quantity produced</td></tr>
+<tr><td>M5-FR-04</td><td>Warn when producing more than available ingredients</td><td>M</td><td>User is warned and must confirm an override (logged)</td></tr>
+<tr><td>M5-FR-05</td><td>Production calendar showing batches and order due dates</td><td>S</td><td>Dated view of work outstanding</td></tr>
+<tr><td>M5-FR-06</td><td>Record waste/spoilage against a batch</td><td>M</td><td>Waste logged with reason; stock adjusted</td></tr>
+</table>
+<h3>M6 — Sales &amp; Orders</h3>
+<table>
+<tr><th>ID</th><th>Requirement</th><th>Pri</th><th>Acceptance criteria</th></tr>
+<tr><td>M6-FR-01</td><td>Record customer name and phone on every order</td><td>M</td><td>Order cannot be saved without a customer name</td></tr>
+<tr><td>M6-FR-02</td><td>Capture channel: walk-in, Instagram, WhatsApp, phone, other</td><td>M</td><td>Channel recorded and reportable</td></tr>
+<tr><td>M6-FR-03</td><td>Add multiple line items (product, qty, unit price)</td><td>M</td><td>Line totals and order subtotal compute automatically</td></tr>
+<tr><td>M6-FR-04</td><td>Create custom cake orders with free-form details and price</td><td>M</td><td>Custom details stored and shown on documents</td></tr>
+<tr><td>M6-FR-05</td><td>Choose delivery or pick-up</td><td>M</td><td>Delivery requires an address; pick-up does not</td></tr>
+<tr><td>M6-FR-06</td><td>Capture delivery/pick-up date and address</td><td>M</td><td>Date required; address required when delivery</td></tr>
+<tr><td>M6-FR-07</td><td>Apply discounts (amount or %) with permission + reason</td><td>M</td><td>Discount stored, attributable, shown on documents</td></tr>
+<tr><td>M6-FR-08</td><td>Order status pipeline: quote → confirmed → in_production → ready → out_for_delivery → completed / cancelled</td><td>M</td><td>Status changes are timestamped and attributed</td></tr>
+<tr><td>M6-FR-09</td><td>Deduct finished-cake stock once when an order is completed</td><td>M</td><td>Stock decreases exactly once per order</td></tr>
+<tr><td>M6-FR-10</td><td>Reverse stock when a completed order is cancelled or refunded</td><td>M</td><td>Stock returns; reversal ledger rows written; never double-reversed</td></tr>
+<tr><td>M6-FR-11</td><td>Reorder a previous order in one click</td><td>C</td><td>New draft order copies prior line items</td></tr>
+<tr><td>M6-FR-12</td><td>Search/filter orders by number, customer, status, channel, date</td><td>M</td><td>Results correct and fast</td></tr>
+<tr><td>M6-FR-13</td><td>Assign a rider and track delivery status</td><td>S</td><td>Delivery has an owner and a status</td></tr>
+<tr><td>M6-FR-14</td><td>Prevent duplicate order submission</td><td>M</td><td>Double-click/submit does not create two orders</td></tr>
+</table>
+<h3>M7 — Payments &amp; Documents</h3>
+<table>
+<tr><th>ID</th><th>Requirement</th><th>Pri</th><th>Acceptance criteria</th></tr>
+<tr><td>M7-FR-01</td><td>Record payments/deposits against an order</td><td>M</td><td>amount_paid and balance update automatically</td></tr>
+<tr><td>M7-FR-02</td><td>Support cash, transfer, POS, other</td><td>M</td><td>Method recorded and reportable</td></tr>
+<tr><td>M7-FR-03</td><td>Show outstanding balance and a debtors list</td><td>M</td><td>Orders with balance &gt; 0 are listed with amount owed</td></tr>
+<tr><td>M7-FR-04</td><td>Record a refund (negative payment)</td><td>M</td><td>Refund reduces amount_paid and appears in cash reports</td></tr>
+<tr><td>M7-FR-05</td><td>Generate a quote, invoice and receipt per order</td><td>M</td><td>Each has an auto number (QUO-/INV-/RCT-)</td></tr>
+<tr><td>M7-FR-06</td><td>Print / PDF exported documents with business branding</td><td>M</td><td>Business name, address, phone and logo present</td></tr>
+<tr><td>M7-FR-07</td><td>Share a document via WhatsApp deep link</td><td>S</td><td>Opens WhatsApp with a pre-filled message</td></tr>
+<tr><td>M7-FR-08</td><td>Documents are immutable snapshots</td><td>S</td><td>Re-printing shows the values at issue time</td></tr>
+<tr><td>M7-FR-09</td><td>Payment ledger by method with refunds and outstanding balances</td><td>M</td><td>Every deposit, balance and refund is visible and reconciles to the order</td></tr>
+<tr><td>M7-FR-10</td><td>Document register for issued quotes, invoices and receipts</td><td>M</td><td>Owner can find, reprint or export any issued document</td></tr>
+<tr><td>M7-FR-11</td><td>Quotes workspace separate from confirmed orders</td><td>S</td><td>Open quotes can be reviewed without mixing them into live production</td></tr>
+<tr><td>M7-FR-12</td><td>Month calendar and delivery dispatch board</td><td>S</td><td>Due work is grouped by date; orders move ready → out for delivery → completed</td></tr>
+</table>
+<h3>M8 — Customers &amp; CRM</h3>
+<table>
+<tr><th>ID</th><th>Requirement</th><th>Pri</th><th>Acceptance criteria</th></tr>
+<tr><td>M8-FR-01</td><td>Maintain customer records (name, phone, email, address, city, state, channel)</td><td>M</td><td>Customer is searchable and reusable across orders</td></tr>
+<tr><td>M8-FR-02</td><td>Detect existing customer by phone and auto-fill</td><td>M</td><td>Typing a known phone populates the customer</td></tr>
+<tr><td>M8-FR-03</td><td>View a customer's order history and lifetime spend</td><td>S</td><td>History and total shown on the customer page</td></tr>
+<tr><td>M8-FR-04</td><td>City/state captured for location reporting</td><td>M</td><td>Orders can be grouped by location</td></tr>
+</table>
+<h3>M9 — Expenses</h3>
+<table>
+<tr><th>ID</th><th>Requirement</th><th>Pri</th><th>Acceptance criteria</th></tr>
+<tr><td>M9-FR-01</td><td>Record ingredient purchases with the vendor</td><td>M</td><td>Purchase is recorded and linked to ingredient stock</td></tr>
+<tr><td>M9-FR-02</td><td>Record other expenses with category (logistics, salaries, rent, utilities, marketing, equipment, packaging, other)</td><td>M</td><td>Categorised and reportable</td></tr>
+<tr><td>M9-FR-03</td><td>Attach a receipt photo to an expense</td><td>S</td><td>Image stored in Supabase Storage and viewable</td></tr>
+<tr><td>M9-FR-04</td><td>Optionally link an expense to an order (job costing)</td><td>S</td><td>Order profit reflects linked costs</td></tr>
+<tr><td>M9-FR-05</td><td>Expense summary by month and category</td><td>M</td><td>Totals reconcile to the underlying rows</td></tr>
+</table>
+<h3>M10 — Reporting &amp; Analytics</h3>
+<table>
+<tr><th>ID</th><th>Requirement</th><th>Pri</th><th>Acceptance criteria</th></tr>
+<tr><td>M10-FR-01</td><td>Dashboard KPIs: today's orders/revenue, month revenue, total stock value, low-stock count, outstanding balance</td><td>M</td><td>Numbers match underlying data</td></tr>
+<tr><td>M10-FR-02</td><td>Highest-selling product (by qty and by revenue)</td><td>M</td><td>Correct ranking for a selected period</td></tr>
+<tr><td>M10-FR-03</td><td>Top customer by spend</td><td>M</td><td>Correct ranking for a selected period</td></tr>
+<tr><td>M10-FR-04</td><td>Highest-revenue location (city/state)</td><td>M</td><td>Correct ranking for a selected period</td></tr>
+<tr><td>M10-FR-05</td><td>Ingredients restocked the most, with quantity and amount</td><td>M</td><td>Correct ranking</td></tr>
+<tr><td>M10-FR-06</td><td>Sales trend over time (day/week/month)</td><td>S</td><td>Chart renders for the period</td></tr>
+<tr><td>M10-FR-07</td><td>Profit &amp; Loss (revenue − COGS − expenses) by period</td><td>S</td><td>Totals reconcile to orders and expenses</td></tr>
+<tr><td>M10-FR-08</td><td>Daily sales close / cash-up summary</td><td>S</td><td>Day's totals by payment method</td></tr>
+<tr><td>M10-FR-09</td><td>Export any list or report to CSV, Excel, Word, PDF or print</td><td>M</td><td>Export chooser offers all five formats and each output opens cleanly</td></tr>
+</table>
+<h3>M11 — Platform &amp; Administration</h3>
+<table>
+<tr><th>ID</th><th>Requirement</th><th>Pri</th><th>Acceptance criteria</th></tr>
+<tr><td>M11-FR-01</td><td>Business settings: name, address, phone, currency, tax rate, logo, receipt footer</td><td>M</td><td>Settings appear on documents</td></tr>
+<tr><td>M11-FR-02</td><td>Audit log of create/update/delete on money-affecting tables</td><td>M</td><td>Owner can filter by user, table, date</td></tr>
+<tr><td>M11-FR-03</td><td>Trash / restore for soft-deleted records</td><td>M</td><td>Deleted item restorable by owner</td></tr>
+<tr><td>M11-FR-04</td><td>Notifications: low stock, orders due today, overdue balances</td><td>S</td><td>Listed in-app with unread state</td></tr>
+<tr><td>M11-FR-05</td><td>Onboarding checklist / guided live setup</td><td>S</td><td>A new install can be configured safely</td></tr>
+<tr><td>M11-FR-06</td><td>Realtime updates when two users are online</td><td>S</td><td>Stock changes appear without reload</td></tr>
+</table>
+<h3>M12 — Data &amp; Compliance</h3>
+<table>
+<tr><th>ID</th><th>Requirement</th><th>Pri</th><th>Acceptance criteria</th></tr>
+<tr><td>M12-FR-01</td><td>Manual full export (all tables) as CSV/JSON</td><td>M</td><td>Owner can download everything</td></tr>
+<tr><td>M12-FR-02</td><td>Soft delete everywhere; no hard deletes from the UI</td><td>M</td><td>No UI path can irreversibly delete money records</td></tr>
+<tr><td>M12-FR-03</td><td>Customer data used only for orders; deletable on request</td><td>S</td><td>Customer anonymisation action available to owner</td></tr>
+<tr><td>M12-FR-04</td><td>Referential integrity across all relationships</td><td>M</td><td>Deleting a vendor keeps history (set null)</td></tr>
+</table>
+<h2>6. Non-Functional Requirements</h2>
+<table>
+<tr><th>ID</th><th>Area</th><th>Requirement</th></tr>
+<tr><td>NFR-01</td><td>Performance</td><td>First meaningful paint &lt; 3 s on 3G; typical list/search response &lt; 1 s for 10k records</td></tr>
+<tr><td>NFR-02</td><td>Scale</td><td>Support ≥ 5,000 products, 100,000 orders, 500,000 stock movements without redesign</td></tr>
+<tr><td>NFR-03</td><td>Availability</td><td>≥ 99.5% monthly (inherits Supabase SLA)</td></tr>
+<tr><td>NFR-04</td><td>Security</td><td>TLS in transit; encryption at rest; RLS on every table; anon key only in client; no service-role key shipped</td></tr>
+<tr><td>NFR-05</td><td>Privacy</td><td>Customer phone numbers accessible only to authenticated staff; not exposed publicly</td></tr>
+<tr><td>NFR-06</td><td>Reliability</td><td>Order submission must not silently fail; failed writes are surfaced and retryable</td></tr>
+<tr><td>NFR-07</td><td>Connectivity</td><td>A dropped connection shows a clear warning; writes require the live database and are never silently queued</td></tr>
+<tr><td>NFR-08</td><td>Usability</td><td>Walk-in order recordable in &lt; 45 s by a first-time user after a short walkthrough</td></tr>
+<tr><td>NFR-09</td><td>Accessibility</td><td>Keyboard navigable, WCAG 2.1 AA contrast, labelled form fields</td></tr>
+<tr><td>NFR-10</td><td>Compatibility</td><td>Latest Chrome, Safari, Edge, Firefox; Android Chrome and iOS Safari primary</td></tr>
+<tr><td>NFR-11</td><td>Localisation</td><td>Currency ₦ (NGN), locale en-NG, DD/MM/YYYY dates; structured for future locales</td></tr>
+<tr><td>NFR-12</td><td>Maintainability</td><td>No build step; ES modules; one module per domain; documented schema migrations</td></tr>
+<tr><td>NFR-13</td><td>Observability</td><td>Client errors logged with context; audit log for business-critical changes</td></tr>
+<tr><td>NFR-14</td><td>Backup/Restore</td><td>Database backups are controlled in Supabase; owner can download a full JSON snapshot; restore procedure documented</td></tr>
+<tr><td>NFR-15</td><td>Time</td><td>All timestamps stored UTC, displayed in local time</td></tr>
+<tr><td>NFR-16</td><td>Theme &amp; navigation</td><td>Every page has a labelled desktop menu, a closable mobile drawer, and a persistent light/dark theme toggle</td></tr>
+</table>
+<h2>7. Business Rules</h2>
+<table>
+<tr><th>ID</th><th>Rule</th></tr>
+<tr><td>BR-01</td><td>An order cannot be saved without a customer name and at least one line item or custom description.</td></tr>
+<tr><td>BR-02</td><td>A delivery order requires a delivery address; a pick-up order does not.</td></tr>
+<tr><td>BR-03</td><td>A delivery/pick-up date is required for any order that is not an open quote.</td></tr>
+<tr><td>BR-04</td><td>Stock is deducted from finished cakes exactly once, when the order becomes completed.</td></tr>
+<tr><td>BR-05</td><td>Cancelling or refunding a completed order reverses the stock deduction; reversals are idempotent.</td></tr>
+<tr><td>BR-06</td><td>Custom (made-to-order) products do not hold stock and are never deducted.</td></tr>
+<tr><td>BR-07</td><td>Creating a production batch consumes recipe ingredients and increases finished-cake stock atomically.</td></tr>
+<tr><td>BR-08</td><td>Producing more than the available ingredients requires an explicit, logged override.</td></tr>
+<tr><td>BR-09</td><td>Stock is allowed to go negative only with an owner override; otherwise the action is blocked with a warning.</td></tr>
+<tr><td>BR-10</td><td>Only the owner can create, edit or delete products, ingredients, vendors and recipes.</td></tr>
+<tr><td>BR-11</td><td>Only the owner can void or delete a completed order; staff must request it.</td></tr>
+<tr><td>BR-12</td><td>Discounts above a configurable threshold require the owner role.</td></tr>
+<tr><td>BR-13</td><td>Every stock change must carry a reason code.</td></tr>
+<tr><td>BR-14</td><td>Order totals are always recalculated from line items: total = subtotal − discount + delivery_fee + tax.</td></tr>
+<tr><td>BR-15</td><td>amount_paid is always the sum of payments (refunds are negative payments).</td></tr>
+<tr><td>BR-16</td><td>Quote/Invoice/Receipt numbers are unique and sequential.</td></tr>
+<tr><td>BR-17</td><td>Records are soft-deleted; history and reports must never show gaps from deletions.</td></tr>
+<tr><td>BR-18</td><td>Ingredient cost per unit updates from the most recent purchase with a non-zero unit cost.</td></tr>
+<tr><td>BR-19</td><td>A customer is matched by phone number (normalised) before creating a new record.</td></tr>
+<tr><td>BR-20</td><td>All money is stored to 2 decimal places and rounded half-up.</td></tr>
+</table>
+<h2>8. Data Requirements (summary)</h2>
+<p>Primary entities and their purpose are detailed in ARCHITECTURE.md §4. Summary: profiles, settings, vendors, ingredients, products, recipes, customers, orders, order_items, payments, documents, production_batches, stock_movements, ingredient_purchases, expenses, plus the additions in supabase/002_core_additions.sql (audit_log, purchase_orders, purchase_order_items, stock_takes, stock_take_items, attachments, notifications, unit_conversions, price_history, order_status_history).</p>
+<h2>9. Release Plan</h2>
+<table>
+<tr><th>Release</th><th>Contents</th><th>Exit criteria</th></tr>
+<tr><td>R0 — Foundation</td><td>Schema, RLS, auth, app shell, generic CRUD</td><td>Owner can sign in and manage products</td></tr>
+<tr><td>R1 — Inventory</td><td>Products, ingredients, vendors, recipes, low-stock alerts</td><td>Stock can be maintained accurately</td></tr>
+<tr><td>R2 — Sales</td><td>Customers, orders, custom cakes, payments, documents</td><td>A real order can be recorded and receipted end-to-end</td></tr>
+<tr><td>R3 — Production &amp; Expenses</td><td>Batches, items received, expenses</td><td>Ingredient consumption and costs tracked</td></tr>
+<tr><td>R4 — Reporting &amp; Controls</td><td>All report views, exports, audit log, trash, notifications</td><td>Owner answers all briefing questions from the app</td></tr>
+<tr><td>R5 — Hardening</td><td>Offline queue, realtime, storage uploads, PDF export, stock takes, purchase orders</td><td>NFR targets met</td></tr>
+</table>
+<h2>10. Risks &amp; Mitigations</h2>
+<table>
+<tr><th>Risk</th><th>Impact</th><th>Mitigation</th></tr>
+<tr><td>Staff resist data entry</td><td>High</td><td>Sub-45-second order flow; mobile-first; offline tolerance; training</td></tr>
+<tr><td>Poor connectivity</td><td>High</td><td>Offline queue + retry; local read cache</td></tr>
+<tr><td>Stock drift from reality</td><td>High</td><td>Reason-coded movements; periodic stock take; waste logging</td></tr>
+<tr><td>Wrong prices/costs</td><td>Medium</td><td>Recipe costing; price history; margin report</td></tr>
+<tr><td>Unauthorised edits</td><td>High</td><td>RLS + audit log + owner-only catalog writes</td></tr>
+<tr><td>Key person dependency</td><td>Medium</td><td>Documented setup; exports; no bespoke tooling</td></tr>
+<tr><td>Scope creep</td><td>Medium</td><td>MoSCoW priorities; phased releases</td></tr>
+</table>
+<h2>11. Assumptions &amp; Dependencies</h2>
+<p>Supabase project is available and stays on a paid/adequate tier for backups.</p>
+<p>Users have a smartphone or computer with a modern browser and intermittent internet.</p>
+<p>The owner will enter the initial product and ingredient catalogue during guided setup.</p>
+<p>Naira (₦) is the only currency in v1.</p>
+<h2>12. Open Questions</h2>
+<p>Should staff be able to complete orders, or only owners? (Affects M6-FR-08.)</p>
+<p>Is VAT registration in place, or should tax default to 0%? (Affects M11-FR-01, M12.)</p>
+<p>Are deposits mandatory for custom cakes above a value threshold? (Affects M7-FR-01.)</p>
+<p>Which states/cities should be pre-loaded for location reporting?</p>
+<p>Should quotes be convertible to invoices in one click? (Recommended: yes.)</p>
+<p>Is a printed thermal receipt (58/80 mm) required, or is A4/PDF sufficient?</p>
+<h2>13. Glossary</h2>
+<table>
+<tr><th>Term</th><th>Meaning</th></tr>
+<tr><td>Ready-made</td><td>A cake baked in advance and held in finished-goods stock.</td></tr>
+<tr><td>Custom</td><td>A made-to-order cake; no stock held; free-form brief.</td></tr>
+<tr><td>BOM / Recipe</td><td>Bill of materials — ingredients and quantities per unit of product.</td></tr>
+<tr><td>COGS</td><td>Cost of goods sold — ingredient cost of what was sold.</td></tr>
+<tr><td>Stock movement</td><td>A single logged change to a stock quantity, with a reason.</td></tr>
+<tr><td>Stock take</td><td>Physical count compared with system quantity to find variance.</td></tr>
+<tr><td>RLS</td><td>Row Level Security — Postgres rules that filter rows per user.</td></tr>
+<tr><td>Soft delete</td><td>Marking a row deleted (deleted_at) instead of removing it.</td></tr>
+</table>
+</body>
+</html>

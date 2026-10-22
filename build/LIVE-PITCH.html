@@ -1,0 +1,156 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Cake Slice Factory - Live Pitch and Responsibilities</title>
+<style>
+@page { size: A4; margin: 1.9cm 1.7cm; }
+* { box-sizing: border-box; }
+body {
+  font-family: "Segoe UI", Calibri, Arial, sans-serif;
+  font-size: 10.5pt; line-height: 1.45; color: #1f2328; margin: 0;
+}
+h1 { font-size: 22pt; color: #7b3f00; margin: 0 0 6pt; }
+h2 { font-size: 15.5pt; color: #7b3f00; margin: 20pt 0 6pt; padding-bottom: 3pt; border-bottom: 1.5pt solid #d9c3a5; }
+h3 { font-size: 12.5pt; color: #4a3416; margin: 14pt 0 5pt; }
+h4 { font-size: 11pt; color: #4a3416; margin: 11pt 0 4pt; }
+p { margin: 0 0 7pt; }
+a { color: #0b5cad; text-decoration: underline; }
+hr { border: none; border-top: 1pt solid #ddd; margin: 12pt 0; }
+ul, ol { margin: 0 0 8pt; padding-left: 20pt; }
+li { margin: 0 0 3pt; }
+code { font-family: Consolas, "Courier New", monospace; font-size: 9.5pt; background: #f2f4f7; padding: 0 2pt; }
+pre {
+  font-family: Consolas, "Courier New", monospace; font-size: 7.6pt; line-height: 1.25;
+  background: #f6f8fa; border: 0.75pt solid #d6dbe1; padding: 7pt 8pt; margin: 0 0 9pt;
+  white-space: pre; overflow-wrap: normal;
+}
+pre code { background: none; font-size: 7.6pt; padding: 0; }
+blockquote { margin: 0 0 9pt; padding: 4pt 0 4pt 10pt; border-left: 3pt solid #d9c3a5; color: #444; }
+table { border-collapse: collapse; width: 100%; margin: 0 0 10pt; font-size: 9pt; }
+th, td { border: 0.75pt solid #b9c0c8; padding: 4pt 6pt; text-align: left; vertical-align: top; }
+th { background: #f0e6d8; color: #4a3416; font-weight: bold; }
+strong { color: #1a1a1a; }
+</style>
+</head>
+<body>
+<h1>Cake Slice Factory – Live Pitch and Responsibilities</h1>
+<p>Cake Slice Factory · Live edition</p>
+<h2>The bakery that keeps its own books</h2>
+<p><em>A simple pitch – and a plain-English map of what handles what.</em></p>
+<p>Prepared 22 October 2026 · Live Supabase system · Owner and staff access</p>
+<h2>The 12-year-old pitch</h2>
+<p>Imagine your bakery has a robot helper.</p>
+<p>It remembers every cake you sold, every naira that came in, every bag of flour in the store, and every cake still in the oven. It also stops you from accidentally selling a cake you don't have, or letting the wrong person change the prices.</p>
+<p>That's this app.</p>
+<p>It is basically a bakery video game – except the cakes are real and the money matters.</p>
+<p>You open the dashboard and see how much money came in today, how much you still need to collect, which cakes are running low, what needs baking, what you spent, and whether your stock numbers actually match reality.</p>
+<p>You click <strong>New order</strong>, pick a customer, add a cake, take a deposit, and the app handles the rest: the receipt number, the balance, the stock, the status, the history, and the report at the end. The <strong>calendar</strong> shows what is due each day. The <strong>delivery board</strong> shows what is ready, who is taking it, and where it is going. The <strong>payments page</strong> is the money jar. The <strong>documents page</strong> is the filing cabinet. The <strong>quotes page</strong> keeps the maybes from getting mixed up with confirmed work.</p>
+<p>Need to send a list to your accountant or keep a copy? The main working lists can be downloaded as <strong>CSV, Excel, Word or PDF</strong>, or printed on paper. You are never trapped inside the screen.</p>
+<p>The important bit: this is not a pretty page sitting in front of a spreadsheet. The rules live in the database. The screen is the shop counter; the database is the warehouse manager, security guard and accountant rolled into one.</p>
+<h3>One cake's journey</h3>
+<table>
+<tr><th>Step</th><th>What happens</th><th>What the app does</th></tr>
+<tr><td>1</td><td>Ada asks for a cake</td><td>The app saves the customer, cake, price, deposit and due date as one order.</td></tr>
+<tr><td>2</td><td>The kitchen bakes</td><td>Production uses the recipe, consumes ingredients and adds finished cake stock.</td></tr>
+<tr><td>3</td><td>The cake is ready</td><td>The order moves to ready. The calendar and delivery board show what leaves today.</td></tr>
+<tr><td>4</td><td>The cake is collected or delivered</td><td>The order moves to completed. Stock goes out once – not twice, even if someone clicks again.</td></tr>
+<tr><td>5</td><td>The money is checked</td><td>Payments and refunds update the balance. The database does the arithmetic.</td></tr>
+<tr><td>6</td><td>The day is closed</td><td>Reports show sales, cost of goods, profit, cash collected and what is still owed.</td></tr>
+</table>
+<p>And because it is a bakery, not a toy, there is a boss mode. The owner sees money, reports, staff, settings, audit logs and the recycle bin. Staff can take orders and do the day-to-day work, but cannot wander into the owner's office.</p>
+<blockquote>“The books finally match the fridge.”</blockquote>
+<h2>The shop floor: what each section is for</h2>
+<p>The sidebar is grouped by the work, not by the database. It now covers the full trip from an enquiry to a delivered cake and a reconciled payment. On a phone it opens as a drawer with a clear close button; on a desktop every label stays visible, so nobody has to guess what an icon means. A light/dark switch sits in the top bar.</p>
+<table>
+<tr><th>Section</th><th>What it answers</th></tr>
+<tr><td><strong>Dashboard</strong></td><td>How are we doing today? What needs attention?</td></tr>
+<tr><td><strong>Orders</strong></td><td>What has been confirmed, baked, collected or cancelled?</td></tr>
+<tr><td><strong>Quotes</strong></td><td>Which enquiries are still waiting for a yes?</td></tr>
+<tr><td><strong>Payments</strong></td><td>What came in, by cash, transfer or POS, and who still owes us?</td></tr>
+<tr><td><strong>Documents</strong></td><td>Where is that quote, invoice or receipt I issued?</td></tr>
+<tr><td><strong>Customers</strong></td><td>Who buys from us, what do they spend and when did they last order?</td></tr>
+<tr><td><strong>Products and Ingredients</strong></td><td>What do we sell, what is in stock and what is running low?</td></tr>
+<tr><td><strong>Recipes</strong></td><td>What does each cake really cost to make?</td></tr>
+<tr><td><strong>Vendors</strong></td><td>Who supplies us and what do we owe them?</td></tr>
+<tr><td><strong>Production</strong></td><td>What is baking, what was wasted and what stock did it use?</td></tr>
+<tr><td><strong>Calendar</strong></td><td>What is due this month, this week and today?</td></tr>
+<tr><td><strong>Deliveries</strong></td><td>What is ready to dispatch, who is riding and where is it going?</td></tr>
+<tr><td><strong>Purchases</strong></td><td>What did we order from suppliers and what arrived?</td></tr>
+<tr><td><strong>Expenses</strong></td><td>What did we spend, on what, and do we have the receipt?</td></tr>
+<tr><td><strong>Reports</strong></td><td>Sales, profit, cash-up, product performance and restocking.</td></tr>
+<tr><td><strong>Admin</strong></td><td>Settings, team access, audit trail, trash, notifications and backup.</td></tr>
+</table>
+<h2>Who handles what</h2>
+<p>Every job has one clear owner. This is the part that keeps the app honest when the screen, the network or a person makes a mistake.</p>
+<table>
+<tr><th>Job</th><th>Handled by</th><th>What that means in the bakery</th></tr>
+<tr><td>The front door</td><td>Supabase Auth</td><td>Checks the email and password, creates the session and sends password-reset emails. No custom password store is kept in the app.</td></tr>
+<tr><td>Who can do what</td><td>Postgres Row Level Security, plus interface checks</td><td>The owner gets the office keys. Staff get a working badge. The restriction is enforced by the database, not just by hiding a button.</td></tr>
+<tr><td>The memory</td><td>Supabase Postgres</td><td>Customers, orders, payments, products, ingredients, recipes, stock movements, expenses and settings all live in one live database.</td></tr>
+<tr><td>The rule robot</td><td>SQL functions and triggers</td><td>Recalculates totals, validates discounts, writes status history, applies stock movements and blocks edits to records that must stay frozen.</td></tr>
+<tr><td>Money maths</td><td>Postgres <code>numeric(14,2)</code> and total triggers</td><td>Prices, deposits, balances and refunds are calculated from the saved records – not trusted from a number typed into the screen.</td></tr>
+<tr><td>Saving an order</td><td><code>create_order()</code> database function</td><td>Saves the order and all its cake lines together. If one part fails, the whole order fails. No half-saved sales.</td></tr>
+<tr><td>Stock control</td><td>Append-only stock ledger and triggers</td><td>A one-way CCTV tape. A completed order deducts stock once; a cancellation reverses it once. Every movement remains visible.</td></tr>
+<tr><td>Receipts, quotes and invoices</td><td><code>issue_document()</code> snapshots</td><td>Creates a numbered document with the prices at that moment. Later price changes cannot rewrite an issued document.</td></tr>
+<tr><td>Payments ledger</td><td>Payments table and <code>recalc_order_paid()</code> trigger</td><td>Every deposit, balance payment and refund updates the order balance. The payments page shows the full history and outstanding debtors.</td></tr>
+<tr><td>Calendar and deliveries</td><td>Orders with due dates and delivery details</td><td>The calendar groups work by due date. The delivery board groups it by run date, address and rider, and moves the order from ready to dispatched to delivered.</td></tr>
+<tr><td>Errors and validation</td><td>Friendly app messages, plus database constraints</td><td>The interface explains problems in plain language. The database is the final referee and refuses invalid writes even if the interface is bypassed.</td></tr>
+<tr><td>Files and receipts</td><td>Supabase Storage, private bucket <code>cake-files</code></td><td>Stores expense receipts and order attachments. The app creates short-lived signed links instead of exposing files publicly.</td></tr>
+<tr><td>Mailing and messaging</td><td>Supabase Auth email; WhatsApp links; print and PDF layouts</td><td>Supabase handles account and password-reset emails. Quotes and invoices are shared by WhatsApp, printed, or downloaded as PDF. The app does not automatically email invoices and has no separate mail server.</td></tr>
+<tr><td>Reports and exports</td><td>SQL views, JavaScript tables, CSV, Excel, Word, PDF and print</td><td>The scoreboard for sales, profit, cash-up and restocking. Every list opens an export chooser so the same data can become a spreadsheet, a Word document, a PDF or paper.</td></tr>
+<tr><td>Notifications</td><td>Database triggers and app refresh</td><td>Low-stock and attention alerts are written as notification records and refreshed in the app. They are not push notifications to a phone.</td></tr>
+<tr><td>Audit trail and recycle bin</td><td>Audit triggers and soft delete</td><td>The diary records who changed money or stock. Deleted records go to trash first, so mistakes can be restored before they are purged.</td></tr>
+<tr><td>Hosting and delivery</td><td>Static files plus Supabase</td><td>The HTML, CSS and JavaScript can be served by any static host. Supabase supplies the database, login, storage and security.</td></tr>
+</table>
+<h2>Downloads that fit the job</h2>
+<p>The export chooser is shared across reports, payments, documents, deliveries, the calendar, customers and the catalogue. It does the same work everywhere, so nobody has to learn five different buttons.</p>
+<table>
+<tr><th>Format</th><th>Best for</th><th>How it is made</th></tr>
+<tr><td><strong>CSV</strong></td><td>Importing into another system or a quick spreadsheet</td><td>Plain text with a strong header row.</td></tr>
+<tr><td><strong>Excel (.xls)</strong></td><td>Owners and accountants who want a formatted workbook</td><td>SpreadsheetML generated in the browser.</td></tr>
+<tr><td><strong>Word (.docx)</strong></td><td>A readable report to edit or attach to a message</td><td>A real Word document with a branded table.</td></tr>
+<tr><td><strong>PDF</strong></td><td>Sending to a customer or keeping a fixed copy</td><td>Generated in the browser, with page numbers.</td></tr>
+<tr><td><strong>Print</strong></td><td>Paper at the counter or “Save as PDF” from the printer dialog</td><td>A clean print layout with the sidebar and buttons removed.</td></tr>
+</table>
+<p>PDF and Word use a one-time document engine loaded from a CDN. If that engine cannot load, the app falls back to a print-ready file so the owner is never stuck. The data never leaves the browser for these exports.</p>
+<h2>What is now live-only</h2>
+<p>The project has been stripped back to the real system. There is no local pretend database and no sample business to explore.</p>
+<table>
+<tr><th>Area</th><th>Current behaviour</th></tr>
+<tr><td>Database</td><td>The app connects only to Supabase. If the URL or anon key is missing, it shows setup instructions instead of opening a local fallback.</td></tr>
+<tr><td>Accounts</td><td>The first account can claim ownership once from the sign-in page. Later accounts start as staff, and an owner promotes them when ready. The database refuses a second owner claim.</td></tr>
+<tr><td>Business data</td><td>The database starts with the settings row and no customers, products, orders or fake history. The owner builds the real catalogue.</td></tr>
+<tr><td>Removed tooling</td><td>The browser database, local session store, sample data file, sample accounts and reset button have been removed.</td></tr>
+<tr><td>Kept for confidence</td><td>The SQL regression suite and the stock-integrity check remain. They test the real database and roll back their own fixtures.</td></tr>
+</table>
+<h2>How to go live</h2>
+<ol>
+<li>Create a Supabase project.</li>
+<li>Run <code>supabase/schema.sql</code>, then <code>supabase/002_core_additions.sql</code>, then <code>supabase/003_owner_setup.sql</code> in the SQL editor.</li>
+<li>Put the project URL and anon public key in <code>js/config.js</code>.</li>
+<li>Serve the folder with <code>node tools/serve.js</code> and open <code>http://localhost:5173</code>.</li>
+<li>Choose <strong>Create owner account</strong> on the sign-in page. The first account becomes the owner. If email confirmation is on, confirm the email and sign in; the claim finishes automatically.</li>
+<li>Add staff by letting them sign up normally, then promote them in <strong>Admin → Users &amp; roles</strong>.</li>
+<li>In Supabase Authentication → URL Configuration, set the Site URL and add your local and production addresses.</li>
+<li>Confirm the private storage bucket <code>cake-files</code> and its storage policies exist.</li>
+<li>Build the real product, ingredient, recipe and customer catalogue, then start taking orders.</li>
+</ol>
+<h2>What the live app covers</h2>
+<table>
+<tr><th>Sales</th><th>Money</th><th>Control</th></tr>
+<tr><td>Quotes, confirmed orders and the full fulfilment pipeline; walk-in, Instagram, WhatsApp and phone channels; deposits, balances, refunds and discount reasons; quotes, invoices and receipts; payment ledger by method and outstanding debtors; order calendar and delivery dispatch board</td><td>Expenses with receipt upload; revenue, COGS, gross and net profit; cash-up, outstanding balances and restocking; CSV, Excel, Word, PDF and print exports; full JSON backup</td><td>Owner and staff permissions in the database; audit trail and recycle bin; immutable financial documents; integrity checks for stock; labelled mobile-first navigation grouped by the work; light and dark themes</td></tr>
+</table>
+<h2>Honest boundaries</h2>
+<ul>
+<li><strong>No automatic invoice email.</strong> Supabase sends account and password-reset emails. Quotes and invoices are shared by WhatsApp, printed, or downloaded as PDF.</li>
+<li><strong>No scheduled cloud backup.</strong> The owner can download a full JSON snapshot from Admin → Data &amp; integrity. Database backups are controlled in Supabase.</li>
+<li><strong>No phone push notifications.</strong> Notifications are database records refreshed in the app.</li>
+<li><strong>No offline write queue.</strong> The app warns when the connection is down; writes need the live database.</li>
+<li><strong>Uploads need the private storage bucket.</strong> The schema sets up the database side; confirm the <code>cake-files</code> bucket and storage policies exist in the Supabase project.</li>
+<li><strong>PDF and Word need the document engine once.</strong> If the CDN is blocked, the app prints instead. The data is not uploaded anywhere.</li>
+</ul>
+<p>In one sentence: Cake Slice Factory is a live bakery control room – the screen takes the order, Supabase remembers it, and the database rules make sure the cake, the cash and the stock all tell the same story.</p>
+<p>Cake Slice Factory · Live system pitch and responsibility map · 21 October 2026</p>
+</body>
+</html>

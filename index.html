@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#8c3b4a">
+  <title>Cake Slice Factory · Sign in</title>
+  <script>
+    try {
+      const saved = localStorage.getItem('csf-theme');
+      document.documentElement.dataset.theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    } catch {
+      document.documentElement.dataset.theme = 'light';
+    }
+  </script>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎂</text></svg>">
+</head>
+<body class="auth-body">
+  <div class="auth-page">
+    <section class="auth-brand" aria-hidden="true">
+      <div class="auth-brand__inner">
+        <a class="brand brand--light" href="index.html">
+          <span class="brand__mark">
+            <svg viewBox="0 0 40 40" width="38" height="38" aria-hidden="true">
+              <path d="M8 30h24" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+              <path d="M9 30v-9a5 5 0 0 1 5-5h12a5 5 0 0 1 5 5v9" fill="none" stroke="currentColor" stroke-width="2.4"/>
+              <path d="M9 23c2.5 1.7 5 1.7 7.5 0s5-1.7 7.5 0 5 1.7 7 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M15 16v-3a2 2 0 0 1 4 0v3M22 16v-3a2 2 0 0 1 4 0v3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="31" cy="9" r="1.6" fill="currentColor"/>
+            </svg>
+          </span>
+          <span class="brand__text"><strong>Cake Slice</strong><small>Factory</small></span>
+        </a>
+
+        <div class="auth-brand__copy">
+          <p class="eyebrow">Baked fresh. Tracked properly.</p>
+          <h1>Cakes, costs and customers — in one place.</h1>
+          <p>Orders, deposits, recipes, stock and daily profit for a busy Nigerian bakery. Built to work on the phone behind the counter.</p>
+        </div>
+
+        <ul class="auth-points">
+          <li><span>1</span><div><strong>Take an order in seconds</strong><small>Walk-in, Instagram, WhatsApp or phone — with a deposit recorded.</small></div></li>
+          <li><span>2</span><div><strong>Know what each cake costs</strong><small>Recipes roll ingredient prices into a live cost and margin.</small></div></li>
+          <li><span>3</span><div><strong>Close the day with confidence</strong><small>Cash-up, balances and low-stock alerts, without a spreadsheet.</small></div></li>
+        </ul>
+
+        <div class="auth-quote">
+          <p>“The books finally match the fridge.”</p>
+          <small>— every bakery owner, eventually</small>
+        </div>
+      </div>
+    </section>
+
+    <main class="auth-main">
+      <button class="icon-btn auth-theme" data-theme-toggle aria-label="Switch to dark mode" title="Switch to dark mode">
+        <svg class="icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.6 6.6 0 0 0 9.8 9.8Z"/></svg>
+      </button>
+      <div class="auth-card card" id="auth-card">
+        <div class="auth-card__head">
+          <p class="eyebrow" id="auth-eyebrow">Welcome back</p>
+          <h2 id="auth-title">Sign in to your bakery</h2>
+          <p class="muted" id="auth-sub">Use your owner or staff account.</p>
+        </div>
+
+        <div class="auth-tabs" role="tablist">
+          <button class="auth-tab is-active" data-mode="signin" role="tab">Sign in</button>
+          <button class="auth-tab" data-mode="signup" role="tab">Create account</button>
+        </div>
+
+        <div id="auth-alert"></div>
+
+        <form id="auth-form" novalidate>
+          <div class="form-grid form-grid--single" id="signup-fields" hidden>
+            <div class="field">
+              <label for="full_name">Full name <span class="req">*</span></label>
+              <input id="full_name" name="full_name" type="text" autocomplete="name" placeholder="Bisi Adeyemi">
+            </div>
+            <div class="field">
+              <label for="phone">Phone</label>
+              <input id="phone" name="phone" type="tel" autocomplete="tel" placeholder="0803 000 0000">
+            </div>
+          </div>
+
+          <div class="form-grid form-grid--single">
+            <div class="field">
+              <label for="email">Email <span class="req">*</span></label>
+              <input id="email" name="email" type="email" autocomplete="email" required placeholder="you@bakery.ng">
+            </div>
+            <div class="field">
+              <label for="password">Password <span class="req">*</span></label>
+              <div class="password-wrap">
+                <input id="password" name="password" type="password" autocomplete="current-password" required minlength="6" placeholder="At least 6 characters">
+                <button type="button" class="password-toggle" data-toggle-password aria-label="Show password">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="auth-row">
+            <label class="checkline"><input type="checkbox" name="remember" checked> Keep me signed in</label>
+            <button type="button" class="link" data-forgot>Forgot password?</button>
+          </div>
+
+          <div class="form-error" role="alert" hidden></div>
+
+          <button class="btn btn--primary btn--block btn--lg" type="submit" id="auth-submit">Sign in</button>
+        </form>
+
+        <div class="auth-owner" id="owner-setup">
+          <p><strong>First time setting up the bakery?</strong> Create the owner account once, then add staff accounts.</p>
+          <button class="btn btn--ghost btn--sm" type="button" data-owner-setup>Create owner account</button>
+        </div>
+
+        <div class="auth-reset" id="reset-panel" hidden>
+          <h3>Reset your password</h3>
+          <p class="muted">Enter your email and we will send a reset link.</p>
+          <div class="field">
+            <label for="reset_email">Email</label>
+            <input id="reset_email" type="email" placeholder="you@bakery.ng">
+          </div>
+          <div class="btn-row">
+            <button class="btn btn--ghost" data-reset-cancel>Back</button>
+            <button class="btn btn--primary" data-reset-send>Send link</button>
+          </div>
+        </div>
+      </div>
+
+      <p class="auth-foot">© <span id="year"></span> Cake Slice Factory · <a class="link" href="docs/PRD.md">Product guide</a></p>
+    </main>
+  </div>
+
+  <div id="toast-root" class="toast-root" aria-live="polite"></div>
+
+  <script type="module">
+    import { getSession, signIn, signUp, sendPasswordReset, claimOwner } from './js/auth.js';
+    import { IS_CONFIGURED, APP_NAME } from './js/config.js';
+    import { esc, toast, icon } from './js/ui.js';
+    import { initTheme } from './js/theme.js';
+
+    const $ = (s) => document.querySelector(s);
+    const form = $('#auth-form');
+    const submit = $('#auth-submit');
+    const alertBox = $('#auth-alert');
+    const errBox = form.querySelector('.form-error');
+    const signupFields = $('#signup-fields');
+    const ownerSetup = $('#owner-setup');
+    let mode = 'signin';
+    let busy = false;
+
+    initTheme();
+    document.getElementById('year').textContent = new Date().getFullYear();
+    document.title = `Sign in · ${APP_NAME}`;
+
+    function nextUrl() {
+      const params = new URLSearchParams(location.search);
+      const next = params.get('next');
+      if (next && next.startsWith('#')) return `dashboard.html${next}`;
+      if (next && next.startsWith('/')) return `dashboard.html${next}`;
+      return 'dashboard.html#/dashboard';
+    }
+
+    function showAlert(kind, html) {
+      alertBox.innerHTML = `<div class="notice ${kind === 'error' ? 'notice--danger' : kind === 'ok' ? 'notice--ok' : ''}"><div class="notice__text">${html}</div></div>`;
+    }
+
+    function setMode(next) {
+      mode = next;
+      const owner = next === 'owner';
+      const signup = next === 'signup' || owner;
+      document.querySelectorAll('[data-mode]').forEach((b) => b.classList.toggle('is-active', b.dataset.mode === next));
+      $('#auth-title').textContent = owner ? 'Create the owner account' : next === 'signin' ? 'Sign in to your bakery' : 'Create your account';
+      $('#auth-sub').textContent = owner
+        ? 'This first account gets full owner access. Use it once, then add staff.'
+        : next === 'signin' ? 'Use your owner or staff account.' : 'New accounts start as staff; an owner can promote you.';
+      $('#auth-eyebrow').textContent = owner ? 'First-run setup' : next === 'signin' ? 'Welcome back' : 'Join the bakery';
+      submit.textContent = owner ? 'Create owner account' : next === 'signin' ? 'Sign in' : 'Create account';
+      signupFields.hidden = !signup;
+      ownerSetup.hidden = next !== 'signin';
+      form.elements.password.autocomplete = next === 'signin' ? 'current-password' : 'new-password';
+      errBox.hidden = true;
+    }
+
+    document.querySelectorAll('[data-mode]').forEach((b) => b.addEventListener('click', () => {
+      alertBox.innerHTML = '';
+      setMode(b.dataset.mode);
+    }));
+
+    document.querySelector('[data-owner-setup]').addEventListener('click', () => {
+      setMode('owner');
+      showAlert('ok', `${icon('lock', 16)} <strong>First-run setup.</strong> The first account becomes the owner and can invite staff. If an owner already exists, use <strong>Sign in</strong> instead.`);
+      form.elements.full_name.focus();
+    });
+
+    document.querySelector('[data-toggle-password]').addEventListener('click', (e) => {
+      const input = form.elements.password;
+      const show = input.type === 'password';
+      input.type = show ? 'text' : 'password';
+      e.currentTarget.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+    });
+
+    function ownerSetupError(error) {
+      const message = error?.message || String(error || 'Could not finish owner setup.');
+      if (/claim_owner|schema cache|does not exist|could not find the function/i.test(message)) {
+        return 'Owner setup is not installed yet. Run supabase/003_owner_setup.sql in the Supabase SQL editor, then try again.';
+      }
+      if (/owner account already exists/i.test(message)) {
+        return `${message} Sign in with that owner account, or ask the owner to promote you.`;
+      }
+      return message;
+    }
+
+    async function doSignIn() {
+      if (busy) return;
+      errBox.hidden = true;
+      const email = form.elements.email.value.trim();
+      const password = form.elements.password.value;
+      if (!email || !password) { fail('Enter your email and password.'); return; }
+      setBusy(true, 'Signing in…');
+      try {
+        await signIn(email, password);
+        const pendingOwner = sessionStorage.getItem('csf-owner-pending');
+        if (pendingOwner && pendingOwner.toLowerCase() === email.toLowerCase()) {
+          try {
+            await claimOwner();
+            toast('Owner access ready. Welcome!');
+          } finally {
+            sessionStorage.removeItem('csf-owner-pending');
+          }
+        }
+        location.replace(nextUrl());
+      } catch (e) {
+        fail(ownerSetupError(e));
+        setBusy(false);
+      }
+    }
+
+    async function doSignUp() {
+      if (busy) return;
+      errBox.hidden = true;
+      const fullName = form.elements.full_name.value.trim();
+      const phone = form.elements.phone.value.trim();
+      const email = form.elements.email.value.trim();
+      const password = form.elements.password.value;
+      const ownerIntent = mode === 'owner';
+      if (!fullName) { fail('Enter your full name.'); return; }
+      if (!email) { fail('Enter your email.'); return; }
+      if (!password || password.length < 6) { fail('Password must be at least 6 characters.'); return; }
+      setBusy(true, ownerIntent ? 'Creating owner account…' : 'Creating account…');
+      try {
+        let data = null;
+        let signedIn = false;
+        try {
+          data = await signUp({ email, password, fullName, phone });
+        } catch (e) {
+          if (!ownerIntent || !/already|registered|exists/i.test(e.message)) throw e;
+          await signIn(email, password);
+          signedIn = true;
+        }
+
+        if (ownerIntent && !signedIn && !data?.session) {
+          try {
+            await signIn(email, password);
+            signedIn = true;
+          } catch (e) {
+            if (/confirm|verified/i.test(e.message)) {
+              sessionStorage.setItem('csf-owner-pending', email.toLowerCase());
+              showAlert('ok', `${icon('mail', 16)} <strong>Check your email.</strong> Confirm ${esc(email)}, then sign in. Owner setup will finish automatically.`);
+              setMode('signin');
+              setBusy(false);
+              return;
+            }
+            throw e;
+          }
+        }
+
+        if (ownerIntent) {
+          try {
+            await claimOwner();
+            toast('Owner account ready. Welcome!');
+          } finally {
+            sessionStorage.removeItem('csf-owner-pending');
+          }
+        } else {
+          if (!data?.session) {
+            showAlert('ok', `${icon('mail', 16)} <strong>Check your email.</strong> Confirm your address, then sign in.`);
+            setMode('signin');
+            setBusy(false);
+            return;
+          }
+          toast('Account created.');
+        }
+        location.replace(nextUrl());
+      } catch (e) {
+        fail(ownerIntent ? ownerSetupError(e) : e.message);
+        setBusy(false);
+      }
+    }
+
+    function fail(message) {
+      errBox.textContent = message;
+      errBox.hidden = false;
+      errBox.scrollIntoView({ block: 'nearest' });
+    }
+
+    function setBusy(state, label = 'Working…') {
+      busy = state;
+      submit.disabled = state;
+      submit.textContent = state ? label : (mode === 'owner' ? 'Create owner account' : mode === 'signin' ? 'Sign in' : 'Create account');
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (mode === 'signin') await doSignIn();
+      else await doSignUp();
+    });
+
+    // password reset panel
+    const resetPanel = $('#reset-panel');
+    const authForm = $('#auth-form');
+    document.querySelector('[data-forgot]').addEventListener('click', () => {
+      authForm.hidden = true;
+      ownerSetup.hidden = true;
+      resetPanel.hidden = false;
+      $('#reset_email').value = form.elements.email.value;
+      $('#reset_email').focus();
+    });
+    document.querySelector('[data-reset-cancel]').addEventListener('click', () => {
+      resetPanel.hidden = true;
+      authForm.hidden = false;
+      ownerSetup.hidden = mode !== 'signin';
+    });
+    document.querySelector('[data-reset-send]').addEventListener('click', async (e) => {
+      const email = $('#reset_email').value.trim();
+      if (!email) { toast('Enter your email first.', 'error'); return; }
+      const btn = e.currentTarget;
+      btn.disabled = true;
+      btn.textContent = 'Sending…';
+      try {
+        await sendPasswordReset(email);
+        toast('Reset link sent. Check your inbox.');
+        resetPanel.hidden = true;
+        authForm.hidden = false;
+      } catch (err) {
+        toast(err.message, 'error');
+      }
+      btn.disabled = false;
+      btn.textContent = 'Send link';
+    });
+
+    // boot
+    const params = new URLSearchParams(location.search);
+    if (params.get('reset') === '1') showAlert('ok', `${icon('check', 16)} Your password has been updated. Sign in with the new one.`);
+    if (params.get('error') === 'inactive') showAlert('error', `${icon('lock', 16)} That account is deactivated. Ask the owner to reactivate it.`);
+
+    if (!IS_CONFIGURED) {
+      $('#auth-eyebrow').textContent = 'Setup required';
+      $('#auth-title').textContent = 'Connect your live database';
+      $('#auth-sub').textContent = 'This app runs on Supabase and needs a live database connection.';
+      document.querySelector('.auth-tabs').hidden = true;
+      form.hidden = true;
+      ownerSetup.hidden = true;
+      showAlert('error', `${icon('alert', 16)} <strong>Supabase is not configured.</strong> Add <code>SUPABASE_URL</code> and <code>SUPABASE_ANON_KEY</code> in <code>js/config.js</code>, then run <code>supabase/schema.sql</code>, <code>supabase/002_core_additions.sql</code> and <code>supabase/003_owner_setup.sql</code> before signing in.`);
+    } else {
+      try {
+        const session = await getSession();
+        if (session?.user) {
+          const pendingOwner = sessionStorage.getItem('csf-owner-pending');
+          if (pendingOwner && pendingOwner.toLowerCase() === (session.user.email || '').toLowerCase()) {
+            try {
+              await claimOwner();
+              toast('Owner access ready. Welcome!');
+            } catch (e) {
+              console.warn('Owner setup did not finish:', e.message);
+            }
+            sessionStorage.removeItem('csf-owner-pending');
+          }
+          location.replace(nextUrl());
+        } else {
+          setMode('signin');
+          form.elements.email.focus();
+        }
+      } catch (err) {
+        setMode('signin');
+        showAlert('error', `${icon('alert', 16)} ${esc(err.message || String(err))}`);
+      }
+    }
+  </script>
+</body>
+</html>

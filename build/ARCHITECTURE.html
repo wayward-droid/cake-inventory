@@ -1,0 +1,442 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Cake Slice Factory - Architecture</title>
+<style>
+@page { size: A4; margin: 1.9cm 1.7cm; }
+* { box-sizing: border-box; }
+body {
+  font-family: "Segoe UI", Calibri, Arial, sans-serif;
+  font-size: 10.5pt; line-height: 1.45; color: #1f2328; margin: 0;
+}
+h1 { font-size: 22pt; color: #7b3f00; margin: 0 0 6pt; }
+h2 { font-size: 15.5pt; color: #7b3f00; margin: 20pt 0 6pt; padding-bottom: 3pt; border-bottom: 1.5pt solid #d9c3a5; }
+h3 { font-size: 12.5pt; color: #4a3416; margin: 14pt 0 5pt; }
+h4 { font-size: 11pt; color: #4a3416; margin: 11pt 0 4pt; }
+p { margin: 0 0 7pt; }
+a { color: #0b5cad; text-decoration: underline; }
+hr { border: none; border-top: 1pt solid #ddd; margin: 12pt 0; }
+ul, ol { margin: 0 0 8pt; padding-left: 20pt; }
+li { margin: 0 0 3pt; }
+code { font-family: Consolas, "Courier New", monospace; font-size: 9.5pt; background: #f2f4f7; padding: 0 2pt; }
+pre {
+  font-family: Consolas, "Courier New", monospace; font-size: 7.6pt; line-height: 1.25;
+  background: #f6f8fa; border: 0.75pt solid #d6dbe1; padding: 7pt 8pt; margin: 0 0 9pt;
+  white-space: pre; overflow-wrap: normal;
+}
+pre code { background: none; font-size: 7.6pt; padding: 0; }
+blockquote { margin: 0 0 9pt; padding: 4pt 0 4pt 10pt; border-left: 3pt solid #d9c3a5; color: #444; }
+table { border-collapse: collapse; width: 100%; margin: 0 0 10pt; font-size: 9pt; }
+th, td { border: 0.75pt solid #b9c0c8; padding: 4pt 6pt; text-align: left; vertical-align: top; }
+th { background: #f0e6d8; color: #4a3416; font-weight: bold; }
+strong { color: #1a1a1a; }
+</style>
+</head>
+<body>
+<h1>Design Architecture</h1>
+<h2>Cake Slice Factory — Sales, Inventory &amp; Expense System</h2>
+<table>
+<tr><th>Field</th><th>Value</th></tr>
+<tr><td>Product</td><td>Cake Slice Factory</td></tr>
+<tr><td>Version</td><td>1.0</td></tr>
+<tr><td>Last updated</td><td>2026-10-21</td></tr>
+<tr><td>Stack</td><td>HTML + CSS + JavaScript (no build step) · Supabase (Postgres, Auth, Storage, Realtime)</td></tr>
+<tr><td>Companion docs</td><td>PRD.md, ../supabase/schema.sql</td></tr>
+</table>
+<h2>1. Architecture Overview</h2>
+<h3>1.1 Style</h3>
+<p>A client–BaaS (Backend-as-a-Service) architecture. There is no custom application server. The browser is a thin, modular presentation layer; Supabase Postgres is the single source of truth and owns all business rules that must not be bypassable (stock math, totals, permissions).</p>
+<pre><code>┌──────────────────────────────────────────────────────────────┐
+│                      BROWSER (client)                        │
+│  HTML pages + CSS + ES-module JavaScript                     │
+│  ┌────────────┐ ┌──────────┐ ┌────────────┐ ┌────────────┐  │
+│  │  modules/  │ │  crud.js │ │   ui.js    │ │  config.js │  │
+│  │  domain UI │ │ generic  │ │ toasts /   │ │ keys + fmt │  │
+│  │            │ │ tables   │ │ modals     │ │            │  │
+│  └─────┬──────┘ └────┬─────┘ └─────┬──────┘ └────────────┘  │
+│        └─────────────┴─────────────┘                        │
+│                      │  supabase.js (single client)          │
+└──────────────────────┼──────────────────────────────────────┘
+                       │  HTTPS — anon key + user JWT
+                       ▼
+┌──────────────────────────────────────────────────────────────┐
+│                        SUPABASE                              │
+│  ┌────────────┐  ┌────────────┐  ┌──────────┐  ┌──────────┐ │
+│  │ Auth (JWT) │  │  Postgres  │  │ Storage  │  │ Realtime │ │
+│  └────────────┘  │  • tables  │  └──────────┘  └──────────┘ │
+│                  │  • RLS     │                              │
+│                  │  • triggers│  ← all business rules live   │
+│                  │  • views   │    here, enforced in SQL     │
+│                  └────────────┘                              │
+└──────────────────────────────────────────────────────────────┘</code></pre>
+<h3>1.2 Architectural principles</h3>
+<p>The database is the referee. Stock deductions, totals, order numbers and permissions are</p>
+<p>implemented in SQL, so a buggy or hostile client cannot corrupt data.</p>
+<p>No build step. Plain ES modules served statically — easy to host, easy to hand over, no toolchain rot.</p>
+<p>One module per domain. Each screen is a self-contained module with a single render() entry point.</p>
+<p>Generic where possible, custom where necessary. Simple entities (vendors, ingredients, products,</p>
+<p>customers, suppliers) use one reusable CRUD engine; orders, production and reports get bespoke code.</p>
+<p>Nothing is truly deleted. Soft deletes + immutable ledger + audit log preserve history.</p>
+<p>Idempotent side effects. Completing/reversing an order adjusts stock exactly once.</p>
+<h2>2. System Context</h2>
+<pre><code>Owner ─┐
+       ├─► Cake Slice Factory (browser app) ──► Supabase ──► Postgres
+Staff ─┘            │                                        (data + rules)
+                    │
+                    ├─► WhatsApp deep links ──► Customer
+                    └─► Print / PDF documents ──► Customer</code></pre>
+<table>
+<tr><th>Actor</th><th>Interaction</th></tr>
+<tr><td>Owner</td><td>Manages catalog, prices, users; reviews reports and audit log</td></tr>
+<tr><td>Staff</td><td>Records orders, customers, payments, production, expenses</td></tr>
+<tr><td>Customer</td><td>Receives quote/invoice/receipt (print or WhatsApp); no direct system access in v1</td></tr>
+<tr><td>Supabase</td><td>Identity provider, database, file storage, change feed</td></tr>
+</table>
+<h2>3. Component Architecture (frontend)</h2>
+<pre><code>dashboard.html
+└── js/app.js .............................. router + nav + session guard
+    ├── js/config.js ....................... Supabase URL/key, currency formatting
+    ├── js/supabase.js ..................... one client instance, pagination helpers
+    ├── js/auth.js ......................... signIn/out, profile, cached role, first-owner claim
+    ├── js/theme.js ........................ saved/system light-dark preference + toggle wiring
+    ├── js/ui.js ........................... toasts, modals, forms, tables, CSV/Excel/Word/PDF/print
+    ├── js/crud.js ......................... generic list+form+delete+export engine
+    └── js/modules/
+        ├── dashboard.js ....... KPIs, low-stock, due orders
+        ├── products.js ........ finished cakes (ready-made + custom)
+        ├── ingredients.js ..... ingredient stock
+        ├── vendors.js ......... supplier records
+        ├── recipes.js ......... bill of materials + cost roll-up
+        ├── production.js ...... batches (consumes ingredients, adds stock)
+        ├── purchases.js ....... items received (purchase orders + direct receipts)
+        ├── orders.js .......... sales, quotes and the order detail/document view
+        ├── payments.js ........ payment ledger, refunds and debtors
+        ├── documents.js ....... issued quote, invoice and receipt register
+        ├── calendar.js ........ month view of pick-ups and deliveries
+        ├── deliveries.js ...... dispatch board and rider status
+        ├── customers.js ....... customer records + history
+        ├── expenses.js ........ expenses + receipts
+        ├── reports.js ......... all summaries
+        └── admin.js ........... users, settings, audit log, trash (owner)</code></pre>
+<h3>3.1 Module contract</h3>
+<p>Every module exports a render(root) function. app.js owns routing and passes the container.</p>
+<pre><code>// js/modules/ingredients.js
+export async function render(root) {
+  root.innerHTML = shellHTML();
+  await loadRows(root);
+}</code></pre>
+<p>Simple entities do not write this by hand — they declare a spec consumed by crud.js:</p>
+<pre><code>export const ingredients = defineCrudModule({
+  table: 'ingredients',
+  title: 'Ingredients',
+  ownerOnly: true,
+  fields: [
+    { name: 'name',         label: 'Ingredient',       type: 'text', required: true },
+    { name: 'unit',         label: 'Unit',             type: 'text', default: 'kg' },
+    { name: 'cost_per_unit',label: 'Cost / unit',      type: 'number' },
+    { name: 'stock_qty',    label: 'Stock',            type: 'number' },
+    { name: 'low_stock_at', label: 'Low stock at',     type: 'number' },
+    { name: 'vendor_id',    label: 'Vendor',           type: 'select',
+      optionsFrom: { table: 'vendors', label: 'name' } },
+  ],
+  columns: ['name', 'unit', 'stock_qty', 'cost_per_unit'],
+});</code></pre>
+<h3>3.2 State management</h3>
+<p>Deliberately minimal — no framework, no global store.</p>
+<p>Server state is fetched on demand and re-fetched after a mutation.</p>
+<p>Session/role is cached in auth.js for the lifetime of the page.</p>
+<p>Per-module state (current filter, search term, loaded rows) lives in module-local variables.</p>
+<p>Lookups (e.g. vendor names) are loaded once per render and memoised in a module-level map.</p>
+<p>This is appropriate because the data set is small-to-moderate and the app is form-driven, not real-time collaborative. Realtime subscriptions (Phase 6) will invalidate module caches on change.</p>
+<h3>3.3 Rendering model</h3>
+<p>Imperative DOM with innerHTML for static structure and event delegation for interaction. All user data interpolated into HTML passes through esc() to prevent injection.</p>
+<h2>4. Data Architecture</h2>
+<h3>4.1 Entity relationships</h3>
+<pre><code>profiles(auth.users)          settings (single row)
+       │
+       │ created_by
+       ▼
+  ┌─────────┐        ┌──────────────┐
+  │ vendors │──1:N──▶│ ingredients  │◀──N:M──┐ (recipes)
+  └────┬────┘        └──────┬───────┘        │
+       │                    │                │
+       │               1:N  │                │
+       │                    ▼                │
+       │            ingredient_purchases      │
+       │            (items received)         │
+       │                                    │
+       │                    ┌───────────────┴────┐
+       │                    │      products      │  (ready_made | custom)
+       │                    │  price, cost,      │
+       │                    │  stock_qty         │
+       │                    └───┬───────────┬────┘
+       │                        │           │
+       │        production_batches│          │ N:1
+       │        (produced)       │          │
+       │                         ▼          ▼
+       │                 stock_movements   order_items ◀── N:1 ── orders
+       │                 (full ledger:                │            │
+       │                  received / used /           │            │ N:1
+       │                  produced / sold /           │            ▼
+       │                  wasted / adjustment)        │       customers
+       │                                              │       (city/state)
+       │                    ┌──────────┐              │
+       └───────────────────▶│ expenses │◀─────────────┘
+                            └──────────┘   documents / payments</code></pre>
+<h3>4.2 Tables (base — supabase/schema.sql)</h3>
+<table>
+<tr><th>Table</th><th>Key columns</th><th>Notes</th></tr>
+<tr><td>settings</td><td>business_name, currency, tax_rate, logo_url</td><td>Single row (id = true)</td></tr>
+<tr><td>profiles</td><td>id → auth.users, role owner|staff, active</td><td>Created by trigger on sign-up</td></tr>
+<tr><td>vendors</td><td>name, contact, phone, supplies</td><td>Soft-deleted</td></tr>
+<tr><td>ingredients</td><td>name, unit, cost_per_unit, stock_qty, low_stock_at, vendor_id</td><td>Soft-deleted</td></tr>
+<tr><td>products</td><td>name, sku, kind, price, cost_price, stock_qty, track_stock</td><td>Ready-made &amp; custom</td></tr>
+<tr><td>recipes</td><td>product_id, ingredient_id, qty</td><td>Unique per pair</td></tr>
+<tr><td>customers</td><td>name, phone, channel, city, state</td><td>Drives location reports</td></tr>
+<tr><td>orders</td><td>order_no, customer_id, kind, channel, fulfilment, status, delivery_*, subtotal, discount, delivery_fee, total, amount_paid, stock_deducted</td><td>Central sales record</td></tr>
+<tr><td>order_items</td><td>order_id, product_id, qty, unit_price, line_total (generated)</td><td>Line totals computed by Postgres</td></tr>
+<tr><td>payments</td><td>order_id, amount, method, paid_on</td><td>Negative amount = refund</td></tr>
+<tr><td>documents</td><td>order_id, doc_type, doc_no, snapshot (jsonb)</td><td>Quote/Invoice/Receipt</td></tr>
+<tr><td>production_batches</td><td>batch_no, product_id, qty_produced</td><td>Consumes recipe, adds stock</td></tr>
+<tr><td>stock_movements</td><td>ingredient_id / product_id, change_qty, reason</td><td>Immutable ledger</td></tr>
+<tr><td>ingredient_purchases</td><td>vendor_id, ingredient_id, qty, unit_cost</td><td>Items received</td></tr>
+<tr><td>expenses</td><td>category, vendor_id, order_id, amount, spent_on</td><td>All non-ingredient spend</td></tr>
+</table>
+<h3>4.3 Tables (additions — supabase/002_core_additions.sql)</h3>
+<table>
+<tr><th>Table</th><th>Purpose</th><th>PRD ref</th></tr>
+<tr><td>audit_log</td><td>Immutable record of create/update/delete on money tables</td><td>A2, M11-FR-02</td></tr>
+<tr><td>order_status_history</td><td>Timestamped status transitions with actor</td><td>M6-FR-08</td></tr>
+<tr><td>purchase_orders + purchase_order_items</td><td>Order ahead from vendors; receiving creates stock</td><td>B6, M4-FR-04</td></tr>
+<tr><td>stock_takes + stock_take_items</td><td>Physical count vs system; posts variance adjustments</td><td>B7, M5/M3</td></tr>
+<tr><td>unit_conversions</td><td>Buy in bags, consume in kg/g</td><td>B4, M3-FR-04</td></tr>
+<tr><td>attachments</td><td>Cake references &amp; expense receipts (Supabase Storage paths)</td><td>B10, M9-FR-03</td></tr>
+<tr><td>notifications</td><td>Low stock, orders due, overdue balances</td><td>B12, M11-FR-04</td></tr>
+<tr><td>price_history</td><td>Every selling-price change with actor</td><td>B11, M2-FR-03</td></tr>
+</table>
+<h3>4.4 Reporting views (security_invoker = true)</h3>
+<p>Views run with the caller's permissions, so RLS still applies.</p>
+<table>
+<tr><th>View</th><th>Answers</th></tr>
+<tr><td>v_stock_alerts</td><td>What is low in stock (products + ingredients)?</td></tr>
+<tr><td>v_product_sales</td><td>Which product sold the most?</td></tr>
+<tr><td>v_top_customers</td><td>Which customer bought the most?</td></tr>
+<tr><td>v_top_locations</td><td>Which city/state earns the most?</td></tr>
+<tr><td>v_ingredient_restock</td><td>Which ingredients were restocked most, and how much?</td></tr>
+<tr><td>v_expense_summary</td><td>Expenses by month and category</td></tr>
+<tr><td>v_sales_trend</td><td>Orders and revenue per day</td></tr>
+</table>
+<h2>5. Security Architecture</h2>
+<h3>5.1 Authentication</h3>
+<p>Supabase Auth (email + password, JWT). The client holds only the anon key; the</p>
+<p>service-role key never reaches the browser.</p>
+<p>The JWT identifies the user; profiles.role grants authorisation.</p>
+<p>Sessions persist across reloads and auto-refresh.</p>
+<p>The first signed-in account can call <code>public.claim_owner()</code>. The function takes a transaction-level advisory lock, confirms that no owner exists, marks the caller as owner, and sets <code>csf.owner_bootstrap</code> so the role guard allows that one checked transition. Later calls fail. All other role changes remain owner-only.</p>
+<h3>5.2 Authorisation — Row Level Security</h3>
+<p>RLS is enabled on every table. Two SQL helper functions encapsulate the rules:</p>
+<pre><code>public.my_role()      -- app_role for auth.uid()
+public.is_owner()     -- role = 'owner'
+public.can_operate()  -- role in ('owner','staff')</code></pre>
+<p>Policy shape applied per table class:</p>
+<table>
+<tr><th>Table class</th><th>SELECT</th><th>INSERT/UPDATE/DELETE</th></tr>
+<tr><td>settings, profiles</td><td>authenticated / own-or-owner</td><td>owner</td></tr>
+<tr><td>vendors, ingredients, products, recipes</td><td>authenticated</td><td>owner only</td></tr>
+<tr><td>customers, orders, order_items, payments, documents, production_batches, stock_movements, ingredient_purchases, expenses</td><td>authenticated</td><td>owner or staff</td></tr>
+</table>
+<pre><code>Request ──► PostgREST ──► RLS policy ──► rows
+                              │
+                              ├─ staff writing to products  ──► 0 rows (blocked)
+                              └─ staff creating an order     ──► allowed</code></pre>
+<h3>5.3 Threat model &amp; mitigations</h3>
+<table>
+<tr><th>Threat</th><th>Mitigation</th></tr>
+<tr><td>Client tampering to raise privileges</td><td>All authorisation in RLS; UI hiding is cosmetic only</td></tr>
+<tr><td>Leaked anon key</td><td>Anon key is public by design; RLS protects data</td></tr>
+<tr><td>Injection via form input</td><td>Parameterised PostgREST queries; esc() before innerHTML</td></tr>
+<tr><td>Accidental/malicious deletion</td><td>Soft delete + owner-only delete + audit log</td></tr>
+<tr><td>Silent data loss on flaky network</td><td>Write confirmation + retry queue (Phase 6)</td></tr>
+<tr><td>Customer phone exposure</td><td>Authenticated-only read; no public endpoints</td></tr>
+</table>
+<h2>6. Business Logic Placement</h2>
+<p>Business rules run in Postgres triggers, not in JavaScript. Rationale: they must hold for every client, remain correct if code is refactored, and execute atomically with the data change.</p>
+<table>
+<tr><th>Trigger</th><th>Fires on</th><th>Effect</th><th>Rule</th></tr>
+<tr><td>handle_new_user</td><td>auth.users insert</td><td>Create profile (staff)</td><td>M1-FR-03</td></tr>
+<tr><td>touch_updated_at</td><td>update on main tables</td><td>Maintain updated_at</td><td>—</td></tr>
+<tr><td>set_order_no / set_doc_no / set_batch_no</td><td>insert</td><td>Generate ORD-/QUO-/INV-/RCT-/BAT- numbers</td><td>BR-16</td></tr>
+<tr><td>on_ingredient_purchase</td><td>ingredient_purchases insert</td><td>Ingredient stock ↑, ledger row, cost update</td><td>M4-FR-02, BR-18</td></tr>
+<tr><td>on_production_batch</td><td>production_batches insert</td><td>Recipe ingredients ↓, product stock ↑, ledger rows</td><td>M5-FR-02/03</td></tr>
+<tr><td>recalc_order_totals</td><td>order_items insert/update/delete</td><td>Recompute subtotal</td><td>BR-14</td></tr>
+<tr><td>recalc_order_total_only</td><td>orders insert/update</td><td>total = subtotal − discount + fee + tax</td><td>BR-14</td></tr>
+<tr><td>sync_amount_paid</td><td>payments insert/update/delete</td><td>Recompute amount_paid</td><td>BR-15</td></tr>
+<tr><td>on_order_completed</td><td>orders update → completed</td><td>Deduct stock once (stock_deducted guard)</td><td>BR-04</td></tr>
+<tr><td>reverse_order_stock</td><td>orders update → cancelled/refunded</td><td>Return stock once</td><td>BR-05</td></tr>
+<tr><td>audit_row_change</td><td>insert/update/delete on money tables</td><td>Write audit_log entry</td><td>A2</td></tr>
+</table>
+<h3>6.1 Stock conservation invariant</h3>
+<p>Every quantity in the system is explained by the ledger:</p>
+<pre><code>ingredient.stock_qty  ≡  Σ stock_movements.change_qty      (per ingredient)
+product.stock_qty     ≡  Σ stock_movements.change_qty      (per product)</code></pre>
+<p>Any stock take variance is itself written as an adjustment movement, so the invariant holds. A monthly reconciliation query can prove it — this is the correctness guarantee of the design.</p>
+<h2>7. Key Flows</h2>
+<h3>7.1 Record and complete an order</h3>
+<pre><code>Staff                 app.js / orders.js            Postgres
+  │  open New Order       │                            │
+  ├───────────────────────►│                            │
+  │  enter customer+phone  │  select/insert customer    │
+  ├───────────────────────►├───────────────────────────►│
+  │  add items (qty,price) │  insert order + items      │
+  ├───────────────────────►├───────────────────────────►│ trig: recalc totals
+  │                        │◄───── order_no, total ─────│
+  │  issue invoice         │  insert documents(snapshot)│
+  ├───────────────────────►├───────────────────────────►│ trig: INV-xxxxx
+  │  record deposit        │  insert payments           │
+  ├───────────────────────►├───────────────────────────►│ trig: amount_paid ↑
+  │  mark completed        │  update orders.status      │
+  ├───────────────────────►├───────────────────────────►│ trig: stock ↓ (once)
+  │◄── receipt printable ──┤                            │</code></pre>
+<h3>7.2 Production batch</h3>
+<pre><code>Baker records batch(product, qty)
+        │
+        ▼
+insert production_batches ──► trigger
+        ├─ for each recipe line:  ingredients.stock_qty -= qty × batch_qty
+        │                        stock_movements(reason='used_in_production')
+        ├─ products.stock_qty += batch_qty
+        └─ stock_movements(reason='produced')
+   (atomic — all or nothing)</code></pre>
+<h3>7.3 Items received</h3>
+<pre><code>Purchase recorded (vendor, ingredient, qty, unit_cost)
+        │
+        ▼
+insert ingredient_purchases ──► trigger
+        ├─ ingredients.stock_qty += qty
+        ├─ ingredients.cost_per_unit = latest non-zero unit cost
+        └─ stock_movements(reason='purchase_received')</code></pre>
+<h3>7.4 Cancel / refund a completed order</h3>
+<pre><code>orders.status: completed → cancelled
+        │
+        ▼
+trigger reverse_order_stock
+        ├─ guard: only if stock_deducted = true  (idempotent)
+        ├─ products.stock_qty += qty  for each line
+        ├─ stock_movements(reason='returned')
+        └─ stock_deducted = false</code></pre>
+<h2>8. Error Handling &amp; Resilience</h2>
+<table>
+<tr><th>Concern</th><th>Approach</th></tr>
+<tr><td>Failed write</td><td>Every mutation checks the Supabase error; on failure a toast shows the message and the row is not removed from the UI</td></tr>
+<tr><td>Duplicate submit</td><td>Buttons disabled during await; unique constraints (order_no, sku) as a backstop</td></tr>
+<tr><td>Empty state</td><td>Each module renders a friendly empty state with a call to action</td></tr>
+<tr><td>Loading state</td><td>Tables render a skeleton/spinner while fetching</td></tr>
+<tr><td>Partial failure in a multi-step flow</td><td>Order + items written via a single Postgres function (create_order(...)) so it is atomic</td></tr>
+<tr><td>Network loss (Phase 6)</td><td>Outbox queue in localStorage; replay on online event; visible &quot;pending sync&quot; badge</td></tr>
+<tr><td>Expired session</td><td>Any 401 redirects to login, preserving the intended route</td></tr>
+</table>
+<h2>9. Directory Structure</h2>
+<pre><code>cake-inventory/
+├── README.md
+├── docs/
+│   ├── PRD.md
+│   └── ARCHITECTURE.md
+├── index.html                  login / sign-up / first-owner setup
+├── dashboard.html              app shell
+├── css/
+│   └── style.css               light/dark themes, responsive shell, print
+├── js/
+│   ├── config.js
+│   ├── supabase.js
+│   ├── auth.js
+│   ├── theme.js
+│   ├── ui.js
+│   ├── crud.js
+│   ├── app.js
+│   └── modules/
+│       ├── dashboard.js
+│       ├── products.js
+│       ├── ingredients.js
+│       ├── vendors.js
+│       ├── recipes.js
+│       ├── production.js
+│       ├── purchases.js
+│       ├── orders.js
+│       ├── payments.js
+│       ├── documents.js
+│       ├── calendar.js
+│       ├── deliveries.js
+│       ├── customers.js
+│       ├── expenses.js
+│       ├── reports.js
+│       └── admin.js
+└── supabase/
+    ├── schema.sql              001 — base
+    ├── 002_core_additions.sql  002 — controls &amp; safety features
+    └── 003_owner_setup.sql     003 — first-run owner claim</code></pre>
+<h2>10. Configuration &amp; Environments</h2>
+<table>
+<tr><th>Item</th><th>Approach</th></tr>
+<tr><td>Supabase URL + anon key</td><td>js/config.js (public by design)</td></tr>
+<tr><td>Business settings</td><td>settings row in the database, editable by the owner in the app</td></tr>
+<tr><td>Environments</td><td>Two Supabase projects: cakeslice-dev and cakeslice-prod; same schema</td></tr>
+<tr><td>Secrets</td><td>None in the client. Service-role key is never shipped.</td></tr>
+<tr><td>Schema changes</td><td>Versioned SQL files, applied in order; every migration is idempotent</td></tr>
+</table>
+<h2>11. Performance Considerations</h2>
+<table>
+<tr><th>Area</th><th>Decision</th></tr>
+<tr><td>Payload size</td><td>Select only needed columns; use count: 'exact', head: true for KPI numbers</td></tr>
+<tr><td>Lists</td><td>Server-side pagination (default 25–50 rows) via range()</td></tr>
+<tr><td>Lookups</td><td>Fetch once per page render and memoise; avoid N+1 queries in table rendering</td></tr>
+<tr><td>Reports</td><td>Pre-aggregated SQL views so the client fetches small result sets</td></tr>
+<tr><td>Assets</td><td>Single small CSS file; no framework; modules loaded natively by the browser</td></tr>
+<tr><td>Caching</td><td>Browser HTTP cache for static assets; Supabase connection reuse via one client</td></tr>
+</table>
+<h2>12. Deployment &amp; Operations</h2>
+<p>Hosting: any static host (Netlify, Vercel, GitHub Pages, or npx serve . locally).</p>
+<p>Because there is no build step, deployment is a file copy.</p>
+<p>Database: Supabase managed Postgres; schema applied through the SQL editor or Supabase CLI.</p>
+<p>Backups: Supabase automated daily backups (depending on plan); plus a full JSON snapshot and CSV/Excel/Word/PDF/print exports the owner can run.</p>
+<p>Restore: documented procedure — restore DB snapshot, redeploy static files, re-verify the</p>
+<p>stock-conservation invariant query.</p>
+<p>Monitoring: Supabase logs for API/database errors; client-side error logging with a stack trace</p>
+<p>and user context.</p>
+<h2>13. Testing Strategy</h2>
+<table>
+<tr><th>Layer</th><th>Approach</th></tr>
+<tr><td>Database rules (highest value)</td><td>SQL test script asserting triggers: totals, stock conservation, idempotent completion, reversal, audit rows</td></tr>
+<tr><td>Permissions</td><td>Attempt writes as staff and assert they are rejected by RLS</td></tr>
+<tr><td>View correctness</td><td>Compare each report view to hand-computed expected values on test fixtures</td></tr>
+<tr><td>Frontend modules</td><td>Manual scripted test pass per module (create/edit/delete/validate/empty state)</td></tr>
+<tr><td>End-to-end</td><td>Golden path: sign in → add product → add ingredient → recipe → produce → order → pay → complete → invoice → report</td></tr>
+<tr><td>Regression</td><td>Re-run the SQL invariant suite after every schema migration</td></tr>
+</table>
+<h2>14. Architecture Decision Records (ADRs)</h2>
+<table>
+<tr><th>#</th><th>Decision</th><th>Rationale</th><th>Trade-off</th></tr>
+<tr><td>ADR-01</td><td>Supabase over a custom backend</td><td>Auth, DB, storage, realtime and RLS out of the box; no server to run</td><td>Vendor dependency</td></tr>
+<tr><td>ADR-02</td><td>No build step (vanilla ES modules)</td><td>Zero toolchain, trivially hostable, easy handover</td><td>No JSX/TS; larger files; manual asset hashing</td></tr>
+<tr><td>ADR-03</td><td>Business rules in Postgres triggers</td><td>Enforced for every client; atomic; refactor-proof</td><td>Logic in SQL, harder to unit test than JS</td></tr>
+<tr><td>ADR-04</td><td>RLS instead of an API layer</td><td>Authorisation cannot be bypassed; less code</td><td>Policy changes require SQL migrations</td></tr>
+<tr><td>ADR-05</td><td>Soft delete everywhere</td><td>History and reports never lose data</td><td>Queries must filter deleted_at is null</td></tr>
+<tr><td>ADR-06</td><td>Immutable stock ledger</td><td>Provable stock accuracy; supports auditing</td><td>Extra writes per operation</td></tr>
+<tr><td>ADR-07</td><td>Reporting via SQL views</td><td>Fast, small payloads, consistent definitions</td><td>Schema change needed for new metrics</td></tr>
+<tr><td>ADR-08</td><td>Custom cakes as order-level data</td><td>Made-to-order items have no stock or recipe</td><td>Two order shapes to handle</td></tr>
+<tr><td>ADR-09</td><td>Generic CRUD engine</td><td>Fewer lines, consistent UX across simple entities</td><td>Less flexible for unusual screens</td></tr>
+<tr><td>ADR-10</td><td>Money as numeric(14,2)</td><td>Exact decimal arithmetic, no float drift</td><td>Must format for display</td></tr>
+</table>
+<h2>15. Roadmap Alignment</h2>
+<table>
+<tr><th>Phase</th><th>Architecture work</th></tr>
+<tr><td>R0 Foundation</td><td>Schema + RLS + auth + shell + CRUD engine</td></tr>
+<tr><td>R1 Inventory</td><td>Products, ingredients, vendors, recipes modules</td></tr>
+<tr><td>R2 Sales</td><td>Orders, customers, payments, documents</td></tr>
+<tr><td>R3 Production &amp; Expenses</td><td>Batch and expense modules; purchase receipts</td></tr>
+<tr><td>R4 Reporting &amp; Controls</td><td>Report views wired up; audit log, trash, notifications</td></tr>
+<tr><td>R5 Hardening</td><td>Offline outbox, realtime subscriptions, Storage uploads, PDF export, stock takes, purchase orders</td></tr>
+<tr><td>R6 Scale</td><td>Multi-branch, forecasting, loyalty</td></tr>
+</table>
+</body>
+</html>
