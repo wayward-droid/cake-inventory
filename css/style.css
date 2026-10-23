@@ -261,7 +261,8 @@ img { max-width: 100%; }
   border-radius: var(--radius); box-shadow: var(--shadow-sm);
   overflow: hidden;
 }
-.card--pad { padding: 1.15rem; }\n.card--open { overflow: visible; }
+.card--pad { padding: 1.15rem; }
+.card--open { overflow: visible; }
 .card-head {
   display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem;
   margin-bottom: .9rem;
@@ -793,7 +794,7 @@ input.is-invalid { border-color: var(--danger); }
   font-size: .68rem; letter-spacing: .07em; text-transform: uppercase;
   color: var(--cocoa-mute); font-weight: 700; padding: 0 0 .35rem;
 }
-.item-row { padding: .35rem 0; border-bottom: 1px solid var(--line-soft); }
+.item-row { padding: .35rem 0; border-bottom: 1px solid var(--line-soft); align-items: start; }
 .item-row:last-child { border-bottom: 0; }
 .item-row__name { display: grid; gap: .3rem; min-width: 0; }
 .item-row__name select, .item-row__name input { font-size: .8rem; padding: .42rem .55rem; }

@@ -15,7 +15,7 @@ export const products = defineCrudModule({
   ownerOnly: true,
   exportable: true,
   searchFields: ['name', 'sku', 'category', 'flavour'],
-  searchPlaceholder: 'Search name, SKU, flavour…',
+  searchPlaceholder: 'Search name, SKU, category, flavour…',
   formWide: true,
   order: { column: 'name', ascending: true },
   defaults: { kind: 'ready_made', unit: 'cake', track_stock: true, status: 'active' },

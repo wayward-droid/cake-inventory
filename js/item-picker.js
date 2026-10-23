@@ -8,7 +8,13 @@ import { esc, money, num, icon } from './ui.js';
 const MAX_RESULTS = 9;
 
 function normalise(value) {
-  return String(value || '').toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '');
+  return String(value || '')
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/&/g, ' and ')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
 }
 
 function productText(product) {
@@ -51,7 +57,7 @@ export function filterProducts(products, query) {
 
 function optionHTML(product) {
   const meta = [product.category, product.flavour, product.size].filter(Boolean).join(' · ');
-  return `<button type="button" class="item-picker__option" role="option" aria-selected="false" data-pick="${esc(product.id)}">
+  return `<button type="button" class="item-picker__option" role="option" tabindex="-1" aria-selected="false" data-pick="${esc(product.id)}">
     <span class="item-picker__avatar" aria-hidden="true">${esc(String(product.name || '?').trim().charAt(0).toUpperCase())}</span>
     <span class="item-picker__copy">
       <strong>${esc(product.name)}</strong>
@@ -211,6 +217,7 @@ export function wireItemPicker(container, products, { onSelect, onInput } = {}) 
       }
       const option = activeOption(menu) || menu.querySelector('[data-pick]');
       if (option) choose(row, list, option.dataset.pick, onSelect);
+      else closeMenu(row);
       return;
     }
     if (event.key === 'Escape') {
@@ -227,12 +234,20 @@ export function wireItemPicker(container, products, { onSelect, onInput } = {}) 
     choose(row, list, option.dataset.pick, onSelect);
   });
 
+  // Fallback for assistive technology that activates an option with click.
+  container.addEventListener('click', (event) => {
+    const option = event.target.closest('[data-pick]');
+    if (!option) return;
+    const row = option.closest('.item-row');
+    choose(row, list, option.dataset.pick, onSelect);
+  });
+
   container.addEventListener('focusout', (event) => {
     const picker = event.target.closest('[data-picker]');
     if (!picker) return;
     const row = picker.closest('.item-row');
     window.setTimeout(() => {
-      if (!row?.contains(document.activeElement)) closeMenu(row);
+      if (!picker.contains(document.activeElement)) closeMenu(row);
     }, 120);
   });
 }

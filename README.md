@@ -24,8 +24,8 @@ The app reads and writes a real Supabase project. Configure the connection befor
    4. `supabase/004_website_catalogue.sql` — adds the **Website** channel and imports
       the live menu from <https://thecakeslicefactory.com/> (86 products across budget
       cakes, cake slices, milk cakes, cake in a jar, banana bread and fruit juice).
-      It is safe to rerun; it updates names and prices without resetting stock already
-      adjusted in the app.
+      It is safe to rerun; it updates names, categories and prices without resetting
+      stock, type or status already adjusted in the app.
 
    If a run is interrupted, fix the reported issue and rerun the whole file from the top.
    All migrations are written to be safe to re-run.
@@ -96,6 +96,8 @@ The same checks are available in **Admin → Data & integrity**.
 ### Sales
 - Orders from walk-in, website, Instagram, WhatsApp, phone or other; pick-up or delivery.
 - Catalogue lines chosen with a searchable product picker **and** custom cake lines with a free-form design brief.
+- The interface calls the standard catalogues “Catalogue” items/orders. The underlying
+  `ready_made` enum value stays for database compatibility with existing projects.
 - Status pipeline: `quote → confirmed → in_production → ready → out_for_delivery → completed`
   (or `cancelled`), with a full status history.
 - Deposits, balance payments and refunds; balance recalculated by the database.

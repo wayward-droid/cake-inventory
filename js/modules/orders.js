@@ -186,7 +186,7 @@ async function renderList(root, ctx, options = {}) {
       const balance = Number(o.total) - Number(o.amount_paid);
       return `<tr data-href="#/orders/${esc(o.id)}" tabindex="0" style="cursor:pointer">
         <td><div class="cell-main"><strong>${esc(o.order_no)}</strong><small>${esc(relativeTime(o.created_at))}</small></div></td>
-        <td><div class="cell-main"><strong>${esc(customer?.name || 'Walk-in')}</strong><small>${esc(customer?.phone || o.channel.replace(/_/g, ' '))}</small></div></td>
+        <td><div class="cell-main"><strong>${esc(customer?.name || 'Walk-in')}</strong><small>${esc(customer?.phone || titleCase(o.channel))}</small></div></td>
         <td><span class="qty-chip">${num(itemCount.get(o.id) || 0)}</span></td>
         <td>${o.delivery_date ? esc(fmtDate(o.delivery_date)) : '<span class="muted">No date</span>'}</td>
         <td>

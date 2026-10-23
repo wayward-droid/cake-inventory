@@ -361,7 +361,7 @@
       document.querySelector('.auth-tabs').hidden = true;
       form.hidden = true;
       ownerSetup.hidden = true;
-      showAlert('error', `${icon('alert', 16)} <strong>Supabase is not configured.</strong> Add <code>SUPABASE_URL</code> and <code>SUPABASE_ANON_KEY</code> in <code>js/config.js</code>, then run <code>supabase/schema.sql</code>, <code>supabase/002_core_additions.sql</code> and <code>supabase/003_owner_setup.sql</code> before signing in.`);
+      showAlert('error', `${icon('alert', 16)} <strong>Supabase is not configured.</strong> Add <code>SUPABASE_URL</code> and <code>SUPABASE_ANON_KEY</code> in <code>js/config.js</code>, then run <code>supabase/schema.sql</code>, <code>supabase/002_core_additions.sql</code>, <code>supabase/003_owner_setup.sql</code> and <code>supabase/004_website_catalogue.sql</code> before signing in.`);
     } else {
       try {
         const session = await getSession();

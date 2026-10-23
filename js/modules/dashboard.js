@@ -2,7 +2,7 @@
 import { sb, errText } from '../supabase.js';
 import {
   esc, money, compactMoney, num, fmtDate, today, monthStart, addDays, icon, statusBadge,
-  lineChart, emptyState, spinner, toast, relativeTime, pct,
+  lineChart, emptyState, spinner, toast, relativeTime, pct, titleCase,
 } from '../ui.js';
 
 export async function render(root, _params, ctx) {
@@ -187,7 +187,7 @@ export async function render(root, _params, ctx) {
               return `<tr data-href="#/orders/${esc(o.id)}" tabindex="0" style="cursor:pointer">
                 <td><strong>${esc(o.order_no)}</strong><small class="cell-sub">${esc(relativeTime(o.created_at))}</small></td>
                 <td>${esc(o._customer || '')}</td>
-                <td>${esc(o.channel.replace(/_/g, ' '))}</td>
+                <td>${esc(titleCase(o.channel))}</td>
                 <td>${esc(money(o.total, { decimals: 0 }))}</td>
                 <td>${balance > 0 ? `<span class="text-danger">${esc(money(balance, { decimals: 0 }))}</span>` : `<span class="text-sage">Paid</span>`}</td>
                 <td>${statusBadge(o.status)}</td>
