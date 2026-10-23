@@ -1,7 +1,7 @@
-// Finished cakes: ready-made stock and made-to-order items.
+// Finished goods: menu catalogue items and made-to-order designs.
 import { sb, errText, dataChanged } from '../supabase.js';
 import { defineCrudModule } from '../crud.js';
-import { PRODUCT_KINDS } from '../config.js';
+import { PRODUCT_KINDS, PRODUCT_CATEGORIES } from '../config.js';
 import {
   esc, money, num, badge, icon, toast, openModal, setBusy, pct,
 } from '../ui.js';
@@ -11,7 +11,7 @@ export const products = defineCrudModule({
   title: 'Products',
   singular: 'product',
   eyebrow: 'Catalogue',
-  subtitle: 'Finished cakes you sell — ready-made stock and made-to-order designs.',
+  subtitle: 'Cakes, slices, jars, breads and drinks you sell — catalogue items and made-to-order designs.',
   ownerOnly: true,
   exportable: true,
   searchFields: ['name', 'sku', 'category', 'flavour'],
@@ -20,13 +20,14 @@ export const products = defineCrudModule({
   order: { column: 'name', ascending: true },
   defaults: { kind: 'ready_made', unit: 'cake', track_stock: true, status: 'active' },
   filters: [
-    { name: 'kind', label: 'Kind', options: PRODUCT_KINDS },
+    { name: 'kind', label: 'Type', options: PRODUCT_KINDS },
+    { name: 'category', label: 'Category', options: PRODUCT_CATEGORIES },
     { name: 'status', label: 'Status', options: ['active', 'draft', 'discontinued'] },
   ],
   fields: [
     { name: 'name', label: 'Product name', type: 'text', required: true, span: 2, placeholder: 'e.g. Vanilla Celebration Cake 6"' },
     { name: 'sku', label: 'SKU', type: 'text', placeholder: 'VAN6' },
-    { name: 'kind', label: 'Kind', type: 'select', options: PRODUCT_KINDS, required: true },
+    { name: 'kind', label: 'Item type', type: 'select', options: PRODUCT_KINDS, required: true },
     { name: 'category', label: 'Category', type: 'text', placeholder: 'Cakes' },
     { name: 'flavour', label: 'Flavour', type: 'text', placeholder: 'Vanilla' },
     { name: 'size', label: 'Size', type: 'text', placeholder: '6 inch' },
@@ -43,12 +44,17 @@ export const products = defineCrudModule({
   columns: [
     {
       key: 'name', label: 'Product',
-      render: (r) => `<div class="cell-main"><strong>${esc(r.name)}</strong><small>${esc(r.sku || r.category || '')}</small></div>`,
+      render: (r) => `<div class="cell-main cell-product">
+        ${r.image_url
+          ? `<img src="${esc(r.image_url)}" alt="" loading="lazy" referrerpolicy="no-referrer">`
+          : `<span class="cell-product__placeholder">${icon('cake', 17)}</span>`}
+        <span><strong>${esc(r.name)}</strong><small>${esc([r.sku, r.category, r.flavour].filter(Boolean).join(' · '))}</small></span>
+      </div>`,
     },
     {
-      key: 'kind', label: 'Kind',
-      value: (r) => r.kind === 'custom' ? 'Custom' : 'Ready-made',
-      render: (r) => badge(r.kind === 'custom' ? 'Custom' : 'Ready-made', r.kind === 'custom' ? 'purple' : 'info'),
+      key: 'kind', label: 'Type',
+      value: (r) => r.kind === 'custom' ? 'Custom' : 'Catalogue',
+      render: (r) => badge(r.kind === 'custom' ? 'Custom' : 'Catalogue', r.kind === 'custom' ? 'purple' : 'info'),
     },
     { key: 'category', label: 'Category' },
     { key: 'price', label: 'Price', className: 'num', render: (r) => money(r.price, { decimals: 0 }) },

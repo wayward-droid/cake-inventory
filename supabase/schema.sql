@@ -22,7 +22,7 @@ do $$ begin
     create type public.app_role as enum ('owner','staff');
   end if;
   if not exists (select 1 from pg_type where typname = 'order_channel') then
-    create type public.order_channel as enum ('walk_in','instagram','whatsapp','phone','other');
+    create type public.order_channel as enum ('walk_in','website','instagram','whatsapp','phone','other');
   end if;
   if not exists (select 1 from pg_type where typname = 'fulfilment_type') then
     create type public.fulfilment_type as enum ('pickup','delivery');
@@ -212,6 +212,7 @@ create table if not exists public.products (
   id            uuid primary key default gen_random_uuid(),
   name          text not null,
   sku           text,
+  website_id    text,
   kind          public.product_kind not null default 'ready_made',
   category      text,
   flavour       text,
@@ -233,7 +234,11 @@ create table if not exists public.products (
 -- ensure columns exist when upgrading from the first draft
 alter table public.products add column if not exists flavour text;
 alter table public.products add column if not exists size text;
+alter table public.products add column if not exists website_id text;
 alter table public.products add column if not exists status text not null default 'active';
+
+create unique index if not exists uq_products_website_id
+  on public.products(website_id);
 
 create table if not exists public.recipes (
   id            uuid primary key default gen_random_uuid(),

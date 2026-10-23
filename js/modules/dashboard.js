@@ -229,12 +229,12 @@ function kpi(label, value, sub, iconName, tone = 'berry', href = '') {
 
 function onboarding({ hasProducts, hasRecipes, hasOrders, customers, ingredients }) {
   const steps = [
-    { done: hasProducts, label: 'Add your finished cakes', href: '#/products', hint: 'Ready-made and custom products' },
+    { done: hasProducts, label: 'Add your finished cakes', href: '#/products', hint: 'Catalogue items and custom products' },
     { done: ingredients > 0, label: 'Add ingredients & stock', href: '#/ingredients', hint: 'Flour, sugar, butter, boxes' },
     { done: hasRecipes, label: 'Build a recipe', href: '#/recipes', hint: 'Link ingredients to each cake' },
     { done: hasProducts && hasRecipes, label: 'Bake your first batch', href: '#/production', hint: 'Consumes ingredients, adds finished stock' },
     { done: customers > 0, label: 'Add your first customer', href: '#/customers', hint: 'Name and phone are enough' },
-    { done: hasOrders, label: 'Record your first order', href: '#/orders/new', hint: 'Walk-in, Instagram or WhatsApp' },
+    { done: hasOrders, label: 'Record your first order', href: '#/orders/new', hint: 'Walk-in, website, Instagram or WhatsApp' },
   ];
   const done = steps.filter((s) => s.done).length;
   return `<section class="setup">

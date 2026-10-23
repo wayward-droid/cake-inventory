@@ -6,8 +6,9 @@ import {
   setBusy, printHTML, today, addDays, labelFor, exportModal,
 } from '../ui.js';
 import {
-  CHANNELS, ORDER_STATUSES, STATUS_FLOW, FULFILMENTS, PAYMENT_METHODS,
+  CHANNELS, ORDER_STATUSES, STATUS_FLOW, FULFILMENTS, PAYMENT_METHODS, ORDER_KINDS,
 } from '../config.js';
+import { itemPickerHTML, wireItemPicker } from '../item-picker.js';
 
 const PAGE_SIZE = 20;
 
@@ -636,15 +637,9 @@ async function editItems(order, items, reload) {
 
       const draw = () => {
         bodyEl.innerHTML = lines.map((l, i) => `<div class="item-row" data-i="${i}">
-          <div class="item-row__name">
-            <select data-f="product_id">
-              <option value="">Custom line…</option>
-              ${products.map((p) => `<option value="${esc(p.id)}" ${p.id === l.product_id ? 'selected' : ''}>${esc(p.name)}</option>`).join('')}
-            </select>
-            <input type="text" data-f="item_name" value="${esc(l.item_name)}" placeholder="Item description" ${l.product_id ? 'readonly' : ''}>
-          </div>
-          <input type="number" data-f="qty" min="0.01" step="any" value="${esc(l.qty)}">
-          <div class="input-prefix"><span>₦</span><input type="number" data-f="unit_price" min="0" step="0.01" value="${esc(l.unit_price)}"></div>
+          <div class="item-row__name">${itemPickerHTML(l, products)}</div>
+          <input type="number" data-f="qty" min="0.01" step="any" value="${esc(l.qty)}" aria-label="Quantity">
+          <div class="input-prefix"><span>₦</span><input type="number" data-f="unit_price" min="0" step="0.01" value="${esc(l.unit_price)}" aria-label="Unit price"></div>
           <button class="icon-btn icon-btn--danger" type="button" data-remove-line="${i}" title="Remove">${icon('trash', 15)}</button>
         </div>`).join('');
       };
@@ -661,17 +656,7 @@ async function editItems(order, items, reload) {
         });
       };
 
-      bodyEl.addEventListener('change', (e) => {
-        const row = e.target.closest('.item-row');
-        if (!row) return;
-        read();
-        if (e.target.dataset.f === 'product_id') {
-          const p = products.find((x) => x.id === e.target.value);
-          const i = Number(row.dataset.i);
-          if (p) { lines[i].item_name = p.name; lines[i].unit_price = Number(p.price); }
-          draw();
-        }
-      });
+      wireItemPicker(bodyEl, products);
       bodyEl.addEventListener('click', (e) => {
         const rm = e.target.closest('[data-remove-line]');
         if (rm) { read(); lines.splice(Number(rm.dataset.removeLine), 1); draw(); }
@@ -680,6 +665,7 @@ async function editItems(order, items, reload) {
         read();
         lines.push({ product_id: null, item_name: '', qty: 1, unit_price: 0 });
         draw();
+        bodyEl.querySelector('.item-row:last-child [data-f="item_name"]')?.focus();
       };
       el.querySelector('[data-save-items]').onclick = async (e) => {
         read();
@@ -965,7 +951,7 @@ async function renderNew(root, ctx) {
     return;
   }
 
-  const lines = [{ product_id: products[0]?.id || null, item_name: products[0]?.name || '', qty: 1, unit_price: Number(products[0]?.price || 0) }];
+  const lines = [{ product_id: null, item_name: '', qty: 1, unit_price: 0 }];
   const params = new URLSearchParams((location.hash.split('?')[1] || ''));
   const preselect = params.get('customer');
   const presetCustomer = preselect ? customers.find((c) => c.id === preselect) : null;
@@ -1017,8 +1003,8 @@ async function renderNew(root, ctx) {
                 <select id="fulfilment" name="fulfilment">${FULFILMENTS.map((f) => `<option value="${f.value}">${esc(f.label)}</option>`).join('')}</select>
               </div>
               <div class="field"><label for="delivery_date">Due date</label><input id="delivery_date" name="delivery_date" type="date" value="${esc(addDays(2))}"></div>
-              <div class="field"><label for="kind">Order kind</label>
-                <select id="kind" name="kind"><option value="ready_made">Ready-made</option><option value="custom">Custom cake</option></select>
+              <div class="field"><label for="kind">Order type</label>
+                <select id="kind" name="kind">${ORDER_KINDS.map((k) => `<option value="${esc(k.value)}">${esc(k.label)}</option>`).join('')}</select>
               </div>
               <div class="delivery-fields" id="delivery-fields" hidden>
                 <div class="field field--wide"><label for="delivery_address">Delivery address</label><input id="delivery_address" name="delivery_address" type="text" placeholder="Street, estate, landmark"></div>
@@ -1031,8 +1017,8 @@ async function renderNew(root, ctx) {
             </div>
           </section>
 
-          <section class="card">
-            <div class="card-head card-head--pad"><div><h2>Items</h2><p class="muted">Pick from the catalogue or add a custom line.</p></div>${icon('cake', 18)}</div>
+          <section class="card card--open">
+            <div class="card-head card-head--pad"><div><h2>Items</h2><p class="muted">Search the catalogue or type a custom line.</p></div>${icon('cake', 18)}</div>
             <div class="items-editor items-editor--page">
               <div class="items-editor__head"><span>Item</span><span>Qty</span><span>Unit price</span><span></span></div>
               <div id="items-body"></div>
@@ -1072,8 +1058,6 @@ async function renderNew(root, ctx) {
   const errEl = root.querySelector('#order-error');
   let target = wantQuote ? 'quote' : 'confirmed';
 
-  const productMap = new Map(products.map((p) => [p.id, p]));
-
   function readLines() {
     [...bodyEl.querySelectorAll('.item-row')].forEach((row, i) => {
       const f = (n) => row.querySelector(`[data-f="${n}"]`);
@@ -1089,14 +1073,10 @@ async function renderNew(root, ctx) {
   function drawLines(focusIndex = -1) {
     bodyEl.innerHTML = lines.map((l, i) => `<div class="item-row" data-i="${i}">
       <div class="item-row__name">
-        <select data-f="product_id">
-          <option value="">Custom line…</option>
-          ${products.map((p) => `<option value="${esc(p.id)}" ${p.id === l.product_id ? 'selected' : ''}>${esc(p.name)} — ${esc(money(p.price, { decimals: 0 }))}</option>`).join('')}
-        </select>
-        <input type="text" data-f="item_name" value="${esc(l.item_name)}" placeholder="Item description" ${l.product_id ? 'readonly' : ''}>
+        ${itemPickerHTML(l, products)}
       </div>
-      <input type="number" data-f="qty" min="0.01" step="any" value="${esc(l.qty)}">
-      <div class="input-prefix"><span>₦</span><input type="number" data-f="unit_price" min="0" step="0.01" value="${esc(l.unit_price)}"></div>
+      <input type="number" data-f="qty" min="0.01" step="any" value="${esc(l.qty)}" aria-label="Quantity">
+      <div class="input-prefix"><span>₦</span><input type="number" data-f="unit_price" min="0" step="0.01" value="${esc(l.unit_price)}" aria-label="Unit price"></div>
       <button class="icon-btn icon-btn--danger" type="button" data-remove="${i}" title="Remove">${icon('trash', 15)}</button>
     </div>`).join('');
     if (focusIndex >= 0) {
@@ -1172,20 +1152,10 @@ async function renderNew(root, ctx) {
   summaryEl.querySelector('#discount').addEventListener('change', updateSummary);
   summaryEl.querySelector('#delivery_fee').addEventListener('change', updateSummary);
 
-  bodyEl.addEventListener('change', (e) => {
-    const row = e.target.closest('.item-row');
-    if (!row) return;
-    readLines();
-    if (e.target.dataset.f === 'product_id') {
-      const p = productMap.get(e.target.value);
-      const i = Number(row.dataset.i);
-      if (p) { lines[i].item_name = p.name; lines[i].unit_price = Number(p.price); }
-      drawLines();
-    } else {
-      updateSummary();
-    }
-  });
   bodyEl.addEventListener('input', (e) => {
+    if (e.target.dataset.f === 'qty' || e.target.dataset.f === 'unit_price') updateSummary();
+  });
+  bodyEl.addEventListener('change', (e) => {
     if (e.target.dataset.f === 'qty' || e.target.dataset.f === 'unit_price') updateSummary();
   });
   bodyEl.addEventListener('click', (e) => {
@@ -1196,6 +1166,10 @@ async function renderNew(root, ctx) {
       if (!lines.length) lines.push({ product_id: null, item_name: '', qty: 1, unit_price: 0 });
       drawLines();
     }
+  });
+  wireItemPicker(bodyEl, products, {
+    onSelect: () => updateSummary(),
+    onInput: () => updateSummary(),
   });
   root.querySelector('#add-line').addEventListener('click', () => {
     readLines();

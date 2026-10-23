@@ -11,7 +11,7 @@ export const SUPABASE_ANON_KEY = 'sb_publishable_iaXjJqgM8EO2rcboc2CJ9w_kAeaiiaT
 
 export const IS_CONFIGURED = Boolean(SUPABASE_URL.trim() && SUPABASE_ANON_KEY.trim());
 
-export const CONFIG_ERROR = 'Supabase is not configured. Add SUPABASE_URL and SUPABASE_ANON_KEY in js/config.js, then run supabase/schema.sql, supabase/002_core_additions.sql and supabase/003_owner_setup.sql before signing in.';
+export const CONFIG_ERROR = 'Supabase is not configured. Add SUPABASE_URL and SUPABASE_ANON_KEY in js/config.js, then run supabase/schema.sql, supabase/002_core_additions.sql, supabase/003_owner_setup.sql and supabase/004_website_catalogue.sql before signing in.';
 
 export const APP_NAME = 'Cake Slice Factory';
 export const APP_TAGLINE = 'Baked fresh. Tracked properly.';
@@ -22,6 +22,7 @@ export const LOCALE = 'en-NG';
 
 export const CHANNELS = [
   { value: 'walk_in', label: 'Walk-in' },
+  { value: 'website', label: 'Website' },
   { value: 'instagram', label: 'Instagram' },
   { value: 'whatsapp', label: 'WhatsApp' },
   { value: 'phone', label: 'Phone' },
@@ -45,9 +46,23 @@ export const FULFILMENTS = [
   { value: 'delivery', label: 'Delivery' },
 ];
 
+export const ORDER_KINDS = [
+  { value: 'ready_made', label: 'Catalogue order' },
+  { value: 'custom', label: 'Custom cake' },
+];
+
 export const PRODUCT_KINDS = [
-  { value: 'ready_made', label: 'Ready-made' },
+  { value: 'ready_made', label: 'Catalogue item' },
   { value: 'custom', label: 'Custom / made to order' },
+];
+
+export const PRODUCT_CATEGORIES = [
+  { value: 'Budget Cakes', label: 'Budget Cakes' },
+  { value: 'Cake Slices', label: 'Cake Slices' },
+  { value: 'Milk Cakes', label: 'Milk Cakes' },
+  { value: 'Cake in a Jar', label: 'Cake in a Jar' },
+  { value: 'Banana Bread', label: 'Banana Bread' },
+  { value: 'Fruit Juice', label: 'Fruit Juice' },
 ];
 
 export const EXPENSE_CATEGORIES = [

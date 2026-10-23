@@ -102,7 +102,7 @@ export async function render(root, params, ctx) {
           ${!selected ? emptyState({ title: 'Pick a product', iconName: 'book' }) : `
             <div class="recipe-head">
               <div>
-                <div class="recipe-head__title"><h2>${esc(selected.name)}</h2>${selected.kind === 'custom' ? badge('Made to order', 'purple') : badge('Ready-made', 'info')}</div>
+                <div class="recipe-head__title"><h2>${esc(selected.name)}</h2>${selected.kind === 'custom' ? badge('Made to order', 'purple') : badge('Catalogue', 'info')}</div>
                 <p class="muted">${esc([selected.sku, selected.size, selected.flavour].filter(Boolean).join(' · ') || 'No SKU or size set')}</p>
               </div>
               <div class="recipe-head__numbers">

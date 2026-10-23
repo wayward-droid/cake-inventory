@@ -21,6 +21,11 @@ The app reads and writes a real Supabase project. Configure the connection befor
    2. `supabase/002_core_additions.sql` — audit log, purchase orders, stock takes,
       notifications, immutability, extra views and policies.
    3. `supabase/003_owner_setup.sql` — first-run owner claim (safe to rerun).
+   4. `supabase/004_website_catalogue.sql` — adds the **Website** channel and imports
+      the live menu from <https://thecakeslicefactory.com/> (86 products across budget
+      cakes, cake slices, milk cakes, cake in a jar, banana bread and fruit juice).
+      It is safe to rerun; it updates names and prices without resetting stock already
+      adjusted in the app.
 
    If a run is interrupted, fix the reported issue and rerun the whole file from the top.
    All migrations are written to be safe to re-run.
@@ -89,8 +94,8 @@ The same checks are available in **Admin → Data & integrity**.
 ## What is implemented
 
 ### Sales
-- Orders from walk-in, Instagram, WhatsApp, phone or other; pick-up or delivery.
-- Ready-made catalogue lines **and** custom cake lines with a free-form design brief.
+- Orders from walk-in, website, Instagram, WhatsApp, phone or other; pick-up or delivery.
+- Catalogue lines chosen with a searchable product picker **and** custom cake lines with a free-form design brief.
 - Status pipeline: `quote → confirmed → in_production → ready → out_for_delivery → completed`
   (or `cancelled`), with a full status history.
 - Deposits, balance payments and refunds; balance recalculated by the database.
@@ -184,7 +189,8 @@ cake-inventory/
 │       ├── calendar.js        month view of pick-ups and deliveries
 │       ├── deliveries.js      dispatch board and rider status
 │       ├── customers.js       directory, history, anonymisation
-│       ├── products.js        finished cakes
+│       ├── products.js        catalogue, prices and finished stock
+│       ├── item-picker.js     searchable product suggestions for order lines
 │       ├── ingredients.js     ingredient stock
 │       ├── vendors.js         supplier records
 │       ├── recipes.js         bill of materials + costing
@@ -197,6 +203,7 @@ cake-inventory/
 │   ├── schema.sql             base schema (run first)
 │   ├── 002_core_additions.sql controls & safety features (run second)
 │   ├── 003_owner_setup.sql    first-run owner claim (run third)
+│   ├── 004_website_catalogue.sql website channel + live menu import (run fourth)
 │   └── tests.sql              transactional regression suite
 └── tools/
     ├── serve.js               zero-dependency static server
