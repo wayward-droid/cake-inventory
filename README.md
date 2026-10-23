@@ -26,6 +26,9 @@ The app reads and writes a real Supabase project. Configure the connection befor
       cakes, cake slices, milk cakes, cake in a jar, banana bread and fruit juice).
       It is safe to rerun; it updates names, categories and prices without resetting
       stock, type or status already adjusted in the app.
+   5. `supabase/005_order_types.sql` — adds the bakery order types used by the order
+      form (milk cake, banana bread, cake slice, budget cake, cake in a jar and fruit
+      juice). Historic orders keep their old values.
 
    If a run is interrupted, fix the reported issue and rerun the whole file from the top.
    All migrations are written to be safe to re-run.
@@ -95,9 +98,11 @@ The same checks are available in **Admin → Data & integrity**.
 
 ### Sales
 - Orders from walk-in, website, Instagram, WhatsApp, phone or other; pick-up or delivery.
+- Order type records the menu category: Milk cake, Banana bread, Cake slice, Budget cake,
+  Cake in a jar or Fruit juice.
 - Catalogue lines chosen with a searchable product picker **and** custom cake lines with a free-form design brief.
-- The interface calls the standard catalogues “Catalogue” items/orders. The underlying
-  `ready_made` enum value stays for database compatibility with existing projects.
+- The interface calls standard catalogue products “Catalogue” items. The underlying
+  `ready_made` product enum value stays for database compatibility with existing projects.
 - Status pipeline: `quote → confirmed → in_production → ready → out_for_delivery → completed`
   (or `cancelled`), with a full status history.
 - Deposits, balance payments and refunds; balance recalculated by the database.
@@ -135,8 +140,9 @@ The same checks are available in **Admin → Data & integrity**.
 - Audit trail on money and stock tables, with before/after viewing.
 - Role-change guard, deactivated accounts, integrity monitor, notifications.
 - Naira formatting (`en-NG`), DD/MM/YYYY display, `numeric(14,2)` money columns.
-- Mobile-first layout with a labelled sidebar on desktop, an off-canvas drawer with a close
-  button on phones/tablets, a light/dark theme toggle, and print styles.
+- Mobile-first layout with a desktop sidebar that rests as an icon rail and slides open
+  on hover or keyboard focus, an off-canvas drawer with a close button on phones/tablets,
+  a light/dark theme toggle, and print styles.
 - One-click first-owner setup, with later staff promotion handled by an existing owner.
 
 ---
@@ -206,6 +212,7 @@ cake-inventory/
 │   ├── 002_core_additions.sql controls & safety features (run second)
 │   ├── 003_owner_setup.sql    first-run owner claim (run third)
 │   ├── 004_website_catalogue.sql website channel + live menu import (run fourth)
+│   ├── 005_order_types.sql    bakery order types (run fifth)
 │   └── tests.sql              transactional regression suite
 └── tools/
     ├── serve.js               zero-dependency static server

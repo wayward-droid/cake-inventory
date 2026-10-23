@@ -11,7 +11,7 @@ export const SUPABASE_ANON_KEY = 'sb_publishable_iaXjJqgM8EO2rcboc2CJ9w_kAeaiiaT
 
 export const IS_CONFIGURED = Boolean(SUPABASE_URL.trim() && SUPABASE_ANON_KEY.trim());
 
-export const CONFIG_ERROR = 'Supabase is not configured. Add SUPABASE_URL and SUPABASE_ANON_KEY in js/config.js, then run supabase/schema.sql, supabase/002_core_additions.sql, supabase/003_owner_setup.sql and supabase/004_website_catalogue.sql before signing in.';
+export const CONFIG_ERROR = 'Supabase is not configured. Add SUPABASE_URL and SUPABASE_ANON_KEY in js/config.js, then run supabase/schema.sql, supabase/002_core_additions.sql, supabase/003_owner_setup.sql, supabase/004_website_catalogue.sql and supabase/005_order_types.sql before signing in.';
 
 export const APP_NAME = 'Cake Slice Factory';
 export const APP_TAGLINE = 'Baked fresh. Tracked properly.';
@@ -46,7 +46,19 @@ export const FULFILMENTS = [
   { value: 'delivery', label: 'Delivery' },
 ];
 
+// Order types match the categories on the live bakery menu. Historic orders
+// may still carry the older ready_made/custom values, which are kept for labels.
 export const ORDER_KINDS = [
+  { value: 'milk_cake', label: 'Milk cake' },
+  { value: 'banana_bread', label: 'Banana bread' },
+  { value: 'cake_slice', label: 'Cake slice' },
+  { value: 'budget_cake', label: 'Budget cake' },
+  { value: 'cake_in_a_jar', label: 'Cake in a jar' },
+  { value: 'fruit_juice', label: 'Fruit juice' },
+];
+
+export const ORDER_KIND_LABELS = [
+  ...ORDER_KINDS,
   { value: 'ready_made', label: 'Catalogue order' },
   { value: 'custom', label: 'Custom cake' },
 ];

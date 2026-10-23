@@ -34,6 +34,7 @@
   --radius-sm: 9px;
   --radius-lg: 22px;
   --sidebar-w: 252px;
+  --sidebar-w-collapsed: 84px;
   --font-body: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
   --font-display: Georgia, "Iowan Old Style", "Times New Roman", serif;
 }
@@ -151,6 +152,7 @@ img { max-width: 100%; }
   background: linear-gradient(175deg, #3a2620 0%, #2b1b17 100%);
   color: #f7ece2; display: flex; flex-direction: column;
   border-right: 1px solid rgba(255, 255, 255, .06);
+  transition: width .2s ease;
 }
 .sidebar-scrim { display: none; }
 
@@ -168,7 +170,14 @@ img { max-width: 100%; }
 .brand__text strong { font-family: var(--font-display); font-size: 1.08rem; letter-spacing: .01em; }
 .brand__text small { font-size: .68rem; letter-spacing: .28em; text-transform: uppercase; color: #c9a898; margin-top: .18rem; }
 
-.nav { flex: 1; overflow-y: auto; padding: .35rem .65rem 1rem; }
+.nav {
+  flex: 1; overflow-y: auto; padding: .35rem .65rem 1rem;
+  scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, .2) transparent;
+}
+.nav::-webkit-scrollbar { width: 6px; }
+.nav::-webkit-scrollbar-track { background: transparent; }
+.nav::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, .2); border-radius: 999px; }
+.nav::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, .3); }
 .nav__section {
   font-size: .64rem; letter-spacing: .2em; text-transform: uppercase;
   color: #a68679; margin: 1.15rem .7rem .4rem; font-weight: 700;
@@ -203,7 +212,7 @@ img { max-width: 100%; }
 }
 .avatar--lg { width: 52px; height: 52px; font-size: 1rem; }
 
-.main { flex: 1; min-width: 0; margin-left: var(--sidebar-w); display: flex; flex-direction: column; }
+.main { flex: 1; min-width: 0; margin-left: var(--sidebar-w); display: flex; flex-direction: column; transition: margin-left .2s ease; }
 
 .offline-banner {
   background: var(--danger); color: #fff; padding: .45rem 1.5rem;
@@ -1012,10 +1021,48 @@ input.is-invalid { border-color: var(--danger); }
 /* --------------------------------------------------------------------------
    Responsive
    -------------------------------------------------------------------------- */
-/* Desktop: keep the full, labelled menu visible so every section is obvious. */
+/* Desktop: the sidebar rests as an icon rail and slides open on hover or keyboard focus. */
 @media (min-width: 1025px) {
-  .sidebar { width: var(--sidebar-w); }
-  .main { margin-left: var(--sidebar-w); }
+  .sidebar {
+    width: var(--sidebar-w-collapsed);
+    overflow: hidden;
+  }
+  .main { margin-left: var(--sidebar-w-collapsed); }
+  .sidebar:is(:hover, :has(:focus-visible)) {
+    width: var(--sidebar-w);
+    box-shadow: var(--shadow-lg);
+  }
+
+  /* Resting icon rail */
+  .sidebar__head { padding-right: 0; }
+  .brand { justify-content: center; padding: 1.15rem .35rem 1.05rem; }
+  .brand__text { display: none; }
+  .nav { padding: .35rem .55rem 1rem; }
+  .nav__section { display: none; }
+  .nav__link { justify-content: center; gap: 0; padding: .7rem .55rem; }
+  .nav__link span { display: none; }
+  .sidebar__foot { padding: .8rem .55rem 1rem; }
+  .sidebar__user { justify-content: center; padding: .4rem; }
+  .sidebar__usertext, .sidebar__user > .icon { display: none; }
+
+  /* Fly-out state */
+  .sidebar:is(:hover, :has(:focus-visible)) .sidebar__head { padding-right: .55rem; }
+  .sidebar:is(:hover, :has(:focus-visible)) .brand {
+    justify-content: flex-start; padding: 1.25rem 1.15rem 1.1rem;
+  }
+  .sidebar:is(:hover, :has(:focus-visible)) .brand__text { display: flex; }
+  .sidebar:is(:hover, :has(:focus-visible)) .nav { padding: .35rem .65rem 1rem; }
+  .sidebar:is(:hover, :has(:focus-visible)) .nav__section { display: block; }
+  .sidebar:is(:hover, :has(:focus-visible)) .nav__link {
+    justify-content: flex-start; gap: .7rem; padding: .58rem .75rem;
+  }
+  .sidebar:is(:hover, :has(:focus-visible)) .nav__link span { display: block; }
+  .sidebar:is(:hover, :has(:focus-visible)) .sidebar__foot { padding: .8rem .65rem 1rem; }
+  .sidebar:is(:hover, :has(:focus-visible)) .sidebar__user {
+    justify-content: flex-start; padding: .5rem .6rem;
+  }
+  .sidebar:is(:hover, :has(:focus-visible)) .sidebar__usertext,
+  .sidebar:is(:hover, :has(:focus-visible)) .sidebar__user > .icon { display: block; }
 }
 
 @media (max-width: 1120px) {

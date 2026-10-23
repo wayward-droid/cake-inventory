@@ -6,7 +6,8 @@ import {
   setBusy, printHTML, today, addDays, labelFor, exportModal,
 } from '../ui.js';
 import {
-  CHANNELS, ORDER_STATUSES, STATUS_FLOW, FULFILMENTS, PAYMENT_METHODS, ORDER_KINDS,
+  CHANNELS, ORDER_STATUSES, STATUS_FLOW, FULFILMENTS, PAYMENT_METHODS,
+  ORDER_KINDS, ORDER_KIND_LABELS,
 } from '../config.js';
 import { itemPickerHTML, wireItemPicker } from '../item-picker.js';
 
@@ -185,7 +186,7 @@ async function renderList(root, ctx, options = {}) {
       const customer = cmap.get(o.customer_id);
       const balance = Number(o.total) - Number(o.amount_paid);
       return `<tr data-href="#/orders/${esc(o.id)}" tabindex="0" style="cursor:pointer">
-        <td><div class="cell-main"><strong>${esc(o.order_no)}</strong><small>${esc(relativeTime(o.created_at))}</small></div></td>
+        <td><div class="cell-main"><strong>${esc(o.order_no)}</strong><small>${esc(relativeTime(o.created_at))} · ${esc(labelFor(ORDER_KIND_LABELS, o.kind))}</small></div></td>
         <td><div class="cell-main"><strong>${esc(customer?.name || 'Walk-in')}</strong><small>${esc(customer?.phone || titleCase(o.channel))}</small></div></td>
         <td><span class="qty-chip">${num(itemCount.get(o.id) || 0)}</span></td>
         <td>${o.delivery_date ? esc(fmtDate(o.delivery_date)) : '<span class="muted">No date</span>'}</td>
@@ -253,6 +254,7 @@ async function renderList(root, ctx, options = {}) {
           { key: 'customer', label: 'Customer', value: (o) => customerMap.get(o.customer_id)?.name || 'Walk-in' },
           { key: 'phone', label: 'Phone', value: (o) => customerMap.get(o.customer_id)?.phone || '' },
           { key: 'delivery_date', label: 'Due', value: (o) => fmtDate(o.delivery_date) },
+          { key: 'kind', label: 'Order type', value: (o) => labelFor(ORDER_KIND_LABELS, o.kind) },
           { key: 'fulfilment', label: 'Fulfilment', value: (o) => titleCase(o.fulfilment) },
           { key: 'channel', label: 'Channel', value: (o) => labelFor(CHANNELS, o.channel) },
           { key: 'status', label: 'Status', value: (o) => titleCase(o.status) },
@@ -415,6 +417,7 @@ async function renderDetail(root, id, ctx) {
             ${icon('chevron', 16)}
           </a>` : '<p class="muted">No customer linked.</p>'}
           <dl class="detail-list">
+            <div><dt>Order type</dt><dd>${esc(labelFor(ORDER_KIND_LABELS, order.kind))}</dd></div>
             <div><dt>Channel</dt><dd>${esc(labelFor(CHANNELS, order.channel))}</dd></div>
             <div><dt>Fulfilment</dt><dd>${esc(labelFor(FULFILMENTS, order.fulfilment))}</dd></div>
             ${order.delivery_date ? `<div><dt>Due</dt><dd>${esc(fmtDate(order.delivery_date))}</dd></div>` : ''}
@@ -565,12 +568,21 @@ async function deletePayment(paymentId, reload) {
   reload();
 }
 
+function orderKindOptions(current) {
+  const options = [...ORDER_KINDS];
+  if (current === 'ready_made' || current === 'custom') {
+    options.push({ value: current, label: labelFor(ORDER_KIND_LABELS, current) });
+  }
+  return options;
+}
+
 function editOrder(order, reload) {
   formModal({
     title: `Edit ${order.order_no}`,
     wide: true,
     fields: [
       { name: 'channel', label: 'Channel', type: 'select', options: CHANNELS, required: true },
+      { name: 'kind', label: 'Order type', type: 'select', options: orderKindOptions(order.kind), required: true, placeholder: 'Select order type' },
       { name: 'fulfilment', label: 'Fulfilment', type: 'select', options: FULFILMENTS, required: true },
       { name: 'delivery_date', label: 'Due date', type: 'date' },
       { name: 'rider_name', label: 'Rider name', type: 'text' },
@@ -587,11 +599,12 @@ function editOrder(order, reload) {
     values: order,
     submitLabel: 'Save changes',
     onSubmit: async (data) => {
+      if (!data.kind) throw new Error('Choose an order type.');
       if (Number(data.discount) > 0 && !String(data.discount_reason || '').trim()) {
         throw new Error('A discount requires a reason.');
       }
       const { error } = await sb.from('orders').update({
-        channel: data.channel, fulfilment: data.fulfilment, delivery_date: data.delivery_date,
+        kind: data.kind, channel: data.channel, fulfilment: data.fulfilment, delivery_date: data.delivery_date,
         rider_name: data.rider_name, rider_phone: data.rider_phone,
         delivery_address: data.delivery_address, delivery_city: data.delivery_city,
         delivery_state: data.delivery_state, delivery_fee: Number(data.delivery_fee || 0),
@@ -1003,8 +1016,11 @@ async function renderNew(root, ctx) {
                 <select id="fulfilment" name="fulfilment">${FULFILMENTS.map((f) => `<option value="${f.value}">${esc(f.label)}</option>`).join('')}</select>
               </div>
               <div class="field"><label for="delivery_date">Due date</label><input id="delivery_date" name="delivery_date" type="date" value="${esc(addDays(2))}"></div>
-              <div class="field"><label for="kind">Order type</label>
-                <select id="kind" name="kind">${ORDER_KINDS.map((k) => `<option value="${esc(k.value)}">${esc(k.label)}</option>`).join('')}</select>
+              <div class="field"><label for="kind">Order type <span class="req">*</span></label>
+                <select id="kind" name="kind" required>
+                  <option value="" disabled selected>Select order type</option>
+                  ${ORDER_KINDS.map((k) => `<option value="${esc(k.value)}">${esc(k.label)}</option>`).join('')}
+                </select>
               </div>
               <div class="delivery-fields" id="delivery-fields" hidden>
                 <div class="field field--wide"><label for="delivery_address">Delivery address</label><input id="delivery_address" name="delivery_address" type="text" placeholder="Street, estate, landmark"></div>
@@ -1220,6 +1236,7 @@ async function renderNew(root, ctx) {
     const existing = pick.value;
     const isQuote = target === 'quote';
     const date = root.querySelector('#delivery_date').value;
+    const kind = root.querySelector('#kind').value;
     const items = lines.filter((l) => l.item_name && l.qty > 0);
     const discount = Number(root.querySelector('#discount').value || 0);
     const discountReason = root.querySelector('#discount_reason').value.trim();
@@ -1232,6 +1249,7 @@ async function renderNew(root, ctx) {
         if (!root.querySelector('#cust_phone').value.trim()) throw new Error('Enter the customer phone number.');
       }
       if (!items.length) throw new Error('Add at least one item.');
+      if (!kind) throw new Error('Choose an order type.');
       if (!isQuote && !date) throw new Error('Choose a delivery or pick-up date.');
       if (discount > 0 && !discountReason) throw new Error('A discount requires a reason.');
       if (fulfilment.value === 'delivery' && !isQuote && !root.querySelector('#delivery_address').value.trim()) {
@@ -1258,7 +1276,7 @@ async function renderNew(root, ctx) {
 
       const { data: created, error } = await sb.rpc('create_order', {
         p_customer: customerId,
-        p_kind: root.querySelector('#kind').value,
+        p_kind: kind,
         p_channel: root.querySelector('#channel').value,
         p_fulfilment: fulfilment.value,
         p_delivery_address: root.querySelector('#delivery_address').value.trim() || null,

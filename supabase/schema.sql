@@ -4,6 +4,8 @@
 --  Run FIRST in: Supabase Dashboard -> SQL Editor -> New query -> Run
 --  Then run:     supabase/002_core_additions.sql
 --  Then run:     supabase/003_owner_setup.sql
+--  Then run:     supabase/004_website_catalogue.sql
+--  Then run:     supabase/005_order_types.sql
 --
 --  The database is the referee. Totals, stock movement, order numbers,
 --  validation and permissions are enforced here, not in the browser.
@@ -32,7 +34,10 @@ do $$ begin
       ('quote','confirmed','in_production','ready','out_for_delivery','completed','cancelled');
   end if;
   if not exists (select 1 from pg_type where typname = 'order_kind') then
-    create type public.order_kind as enum ('ready_made','custom');
+    create type public.order_kind as enum (
+      'ready_made','custom','milk_cake','banana_bread','cake_slice',
+      'budget_cake','cake_in_a_jar','fruit_juice'
+    );
   end if;
   if not exists (select 1 from pg_type where typname = 'product_kind') then
     create type public.product_kind as enum ('ready_made','custom');
